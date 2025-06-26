@@ -1,89 +1,105 @@
-/* eslint-disable array-callback-return */
-import React, { useEffect, useState } from 'react';
-import { BiMinus, BiPlus } from 'react-icons/bi';
-import { motion } from 'framer-motion';
-import { useStateValue } from '../../context/StateProvider';
-import { actionType } from '../../context/reducer';
-import { fetchCart } from '../../utils/fetchLocalStorageData';
-let items = [];
+import React from "react";
+import { BiMinus, BiPlus } from "react-icons/bi";
+import { motion } from "framer-motion";
+import { useStateValue } from "../../context/StateProvider";
+import { actionType } from "../../context/reducer";
 
-const CartItem = ({ item, setFlag, flag }) => {
+/* ---------- Warna tema ---------- */
+const PRIMARY    = "#FE724C";                 // oranye
+const ACCENT_BG  = "rgba(255,211,110,0.15)";  // kuning lembut
+
+function CartItem({ item }) {
   const [{ cartItems }, dispatch] = useStateValue();
-  const [qty, setQty] = useState(item.qty);
 
-  const cartDispatch = () => {
-    localStorage.setItem('cartItems', JSON.stringify(items));
-    dispatch({
-      type: actionType.SET_CARTITEMS,
-      cartItems: items,
-    });
-  };
+  const updateQty = (type) => {
+    let updated = [];
 
-  const updateQty = (action, id) => {
-    if (action === 'add') {
-      setQty(qty + 1);
-      cartItems.map((item) => {
-        if (item.id === id) {
-          item.qty += 1;
-          setFlag(flag + 1);
-        }
-      });
-      cartDispatch();
-    } else {
-      // initial state value is one so you need to check if 1 then remove it
-      if (qty === 1) {
-        items = cartItems.filter((item) => item.id !== id);
-        setFlag(flag + 1);
-        cartDispatch();
+    if (type === "add") {
+      updated = cartItems.map((i) =>
+        i.id === item.id ? { ...i, qty: i.qty + 1 } : i
+      );
+    } else if (type === "remove") {
+      if (item.qty === 1) {
+        updated = cartItems.filter((i) => i.id !== item.id);
       } else {
-        setQty(qty - 1);
-        cartItems.map((item) => {
-          if (item.id === id) {
-            item.qty -= 1;
-            setFlag(flag + 1);
-          }
-        });
-        cartDispatch();
+        updated = cartItems.map((i) =>
+          i.id === item.id ? { ...i, qty: i.qty - 1 } : i
+        );
       }
     }
+
+    dispatch({ type: actionType.SET_CARTITEMS, cartItems: updated });
+    localStorage.setItem("cartItems", JSON.stringify(updated));
   };
 
-  useEffect(() => {
-    items = cartItems;
-  }, [qty, items]);
+  /* ---------- UI ---------- */
   return (
-    <div className="w-full p-1 px-2 rounded-lg bg-cartItem flex items-center gap-2">
-      <img
-        src={item.imageURL}
-        className="w-20 h-20 rounded-full obejct-contain"
-        alt=""
-      />
-      <div className="flex flex-col gap-2">
-        <p className="text-base text-gray-50">{item?.title}</p>
-        <p className="text-sm block text-gray-300 font-semibold">
-          <span className=" text-red-300">Rp </span>
-          {parseFloat(item?.price) * qty}
+    <div
+      className="
+        w-full px-3 py-2
+        flex items-center gap-3
+        rounded-[1.618rem]
+        bg-white/80 backdrop-blur-md
+        shadow-[0_2px_10px_rgba(0,0,0,0.05)]
+      "
+    >
+      {/* Gambar */}  
+      <div
+        className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0"
+        style={{ background: ACCENT_BG }}
+      >
+        <img
+          src={item.imageURL}
+          alt={item.title}
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      {/* Nama & harga */}
+      <div className="flex flex-col gap-[0.2rem]">
+        <p className="text-sm font-medium text-[#363636]">{item.title}</p>
+        <p className="text-sm font-semibold" style={{ color: PRIMARY }}>
+          Rp {(item.qty * item.price).toLocaleString("id-ID")}
         </p>
       </div>
-      <div className="group flex items-center gap-2 ml-auto cursor-pointer">
-        <motion.div
-          whileTap={{ scale: 0.75 }}
-          onClick={() => updateQty('remove', item?.id)}
+
+      {/* Kontrol qty */}
+      <div className="flex items-center gap-2 ml-auto">
+        <motion.button
+          whileTap={{ scale: 0.8 }}
+          onClick={() => updateQty("remove")}
+          className="
+            w-6 h-6 flex items-center justify-center
+            rounded-full text-white
+            shadow-[0_1px_4px_rgba(254,114,76,0.35)]
+          "
+          style={{ backgroundColor: PRIMARY }}
         >
-          <BiMinus className="text-gray-50" />
-        </motion.div>
-        <p className="w-5 h-5 rounded-sm bg-cartBg text-gray-50 flex items-center justify-center">
-          {qty}
-        </p>
-        <motion.div
-          whileTap={{ scale: 0.75 }}
-          onClick={() => updateQty('add', item?.id)}
+          <BiMinus className="text-xs" />
+        </motion.button>
+
+        <span
+          className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-medium"
+          style={{ background: ACCENT_BG, color: PRIMARY }}
         >
-          <BiPlus className="text-gray-50" />
-        </motion.div>
+          {item.qty}
+        </span>
+
+        <motion.button
+          whileTap={{ scale: 0.8 }}
+          onClick={() => updateQty("add")}
+          className="
+            w-6 h-6 flex items-center justify-center
+            rounded-full text-white
+            shadow-[0_1px_4px_rgba(254,114,76,0.35)]
+          "
+          style={{ backgroundColor: PRIMARY }}
+        >
+          <BiPlus className="text-xs" />
+        </motion.button>
       </div>
     </div>
   );
-};
+}
 
 export default CartItem;

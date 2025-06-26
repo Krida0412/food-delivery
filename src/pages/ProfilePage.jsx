@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   getAuth,
   onAuthStateChanged,
   updateProfile,
   signOut,
-} from 'firebase/auth';
+} from "firebase/auth";
 import {
   getFirestore,
   doc,
   getDoc,
   setDoc,
-} from 'firebase/firestore';
+} from "firebase/firestore";
 import {
   FiUser,
   FiLogOut,
@@ -18,14 +18,20 @@ import {
   FiTag,
   FiSettings,
   FiEdit2,
-} from 'react-icons/fi';
+} from "react-icons/fi";
+import { motion } from "framer-motion";
+
+/* ---------- Palet ---------- */
+const PRIMARY   = "#FE724C";
+const SECONDARY = "#FFD36E";
+const BASE_BG   = "#FFFCF9";   // 🎯 base-background konsisten
 
 /* -------------------------------------------------- */
 /*  UTIL: Ambil / buat dok user di Firestore          */
 /* -------------------------------------------------- */
 const useUserProfile = () => {
-  const [user, setUser] = useState(null);          // data Auth
-  const [profile, setProfile] = useState(null);    // data Firestore
+  const [user, setUser]       = useState(null);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,16 +39,17 @@ const useUserProfile = () => {
     const unsub = onAuthStateChanged(auth, async (usr) => {
       if (usr) {
         setUser(usr);
-        const db = getFirestore();
-        const ref = doc(db, 'users', usr.uid);
+        const db  = getFirestore();
+        const ref = doc(db, "users", usr.uid);
         const snap = await getDoc(ref);
+
         if (snap.exists()) {
           setProfile(snap.data());
         } else {
-          // buat dokumen default
+          /* buat dokumen default */
           const data = {
-            name: usr.displayName || 'Pengguna Baru',
-            phone: '',
+            name: usr.displayName || "Pengguna Baru",
+            phone: "",
             createdAt: Date.now(),
           };
           await setDoc(ref, data);
@@ -65,43 +72,54 @@ const useUserProfile = () => {
 /* -------------------------------------------------- */
 const ProfilePage = () => {
   const { user, profile, loading } = useUserProfile();
-  const [editName, setEditName] = useState(false);
-  const [nameInput, setNameInput] = useState('');
+  const [editName, setEditName]   = useState(false);
+  const [nameInput, setNameInput] = useState("");
 
+  /* Simpan nama baru */
   const saveName = async () => {
-    if (!nameInput) return;
+    if (!nameInput.trim()) return;
     const auth = getAuth();
-    const db = getFirestore();
+    const db   = getFirestore();
     await updateProfile(auth.currentUser, { displayName: nameInput });
     await setDoc(
-      doc(db, 'users', auth.currentUser.uid),
+      doc(db, "users", auth.currentUser.uid),
       { name: nameInput },
       { merge: true }
     );
     setEditName(false);
   };
 
+  /* Logout */
   const handleLogout = async () => {
     await signOut(getAuth());
-    // redirect bisa pakai react-router navigate
-    window.location.href = '/signin';
+    window.location.href = "/signin";
   };
 
+  /* ------ UI loading / not-logged-in ------ */
   if (loading) {
     return (
-      <section className="w-full min-h-screen flex items-center justify-center">
-        <p>Loading...</p>
+      <section
+        className="w-full min-h-screen flex items-center justify-center"
+        style={{ background: BASE_BG }}
+      >
+        <p className="text-[#555]">Memuat…</p>
       </section>
     );
   }
 
   if (!user) {
     return (
-      <section className="w-full min-h-screen flex flex-col items-center justify-center">
-        <p className="mb-4">Kamu belum login.</p>
+      <section
+        className="w-full min-h-screen flex flex-col items-center justify-center gap-4"
+        style={{ background: BASE_BG }}
+      >
+        <p className="text-[#8A8A8A]">Kamu belum login.</p>
         <a
           href="/signin"
-          className="px-4 py-2 bg-cyan-500 text-white rounded-md"
+          className="px-5 py-2 rounded-full text-white"
+          style={{
+            background: "linear-gradient(135deg,#FE724C 0%,#FF9866 100%)",
+          }}
         >
           Login Sekarang
         </a>
@@ -109,20 +127,36 @@ const ProfilePage = () => {
     );
   }
 
+  /* -------------------- UI utama -------------------- */
   return (
-    <section className="w-full min-h-screen px-4 py-6 bg-white">
-      {/* HEADER */}
-      <div className="flex items-center gap-4 mb-6">
+    <main
+      className="w-full min-h-screen px-4 md:px-8 py-8"
+      style={{ background: BASE_BG }}
+    >
+      {/* HEADER PROFILE */}
+      <div
+        className="
+          flex items-center gap-4 mb-8
+          rounded-[1.618rem]
+          bg-white/80 backdrop-blur-md
+          shadow-[0_4px_16px_rgba(0,0,0,0.06)]
+          border border-white/60
+          p-4
+        "
+      >
+        {/* Foto */}
         <img
           src={
             user.photoURL ||
-            'https://ui-avatars.com/api/?name=' +
-              encodeURIComponent(user.displayName || 'U')
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(
+              user.displayName || "U"
+            )}`
           }
           alt={user.displayName}
-          className="w-16 h-16 rounded-full border"
+          className="w-16 h-16 rounded-full border object-cover shrink-0"
         />
 
+        {/* Nama + email */}
         <div className="flex-1">
           {editName ? (
             <div className="flex gap-2 items-center">
@@ -130,70 +164,94 @@ const ProfilePage = () => {
                 value={nameInput}
                 onChange={(e) => setNameInput(e.target.value)}
                 placeholder="Nama baru"
-                className="border px-2 py-1 rounded w-full text-sm"
+                className="
+                  flex-1 text-sm px-3 py-[6px]
+                  rounded-md border border-[#E5E5E5]
+                  focus:outline-none focus:ring-2 focus:ring-[#FE724C]/60
+                "
               />
               <button
                 onClick={saveName}
-                className="px-3 py-1 bg-cyan-500 text-white text-xs rounded"
+                className="
+                  px-3 py-1 text-xs font-medium text-white rounded-md
+                "
+                style={{
+                  background:
+                    "linear-gradient(135deg,#FE724C 0%,#FF9866 100%)",
+                }}
               >
                 Simpan
               </button>
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-lg font-semibold text-[#363636]">
                 {user.displayName || profile?.name}
               </h2>
               <button
                 onClick={() => {
                   setEditName(true);
-                  setNameInput(user.displayName || profile?.name || '');
+                  setNameInput(user.displayName || profile?.name || "");
                 }}
-                className="text-gray-500"
+                className="text-[#8A8A8A] hover:text-[#363636]"
               >
                 <FiEdit2 />
               </button>
             </div>
           )}
-          <p className="text-sm text-gray-500 truncate">{user.email}</p>
+          <p className="text-sm text-[#8A8A8A] truncate">{user.email}</p>
         </div>
       </div>
 
       {/* MENU LIST */}
-      <div className="flex flex-col gap-4">
+      <section className="flex flex-col gap-4">
         <MenuItem icon={<FiClipboard />} title="Pesanan Saya" link="/orders" />
-        <MenuItem icon={<FiTag />} title="Kupon Saya" link="/promo" />
-        <MenuItem icon={<FiSettings />} title="Pengaturan" link="/settings" />
+        <MenuItem icon={<FiTag />}       title="Kupon Saya"   link="/promo"  />
+        <MenuItem icon={<FiSettings />}  title="Pengaturan"   link="/settings"/>
 
         {/* Logout */}
-        <button
+        <motion.button
+          whileTap={{ scale: 0.96 }}
           onClick={handleLogout}
-          className="flex items-center justify-between p-4 rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 text-red-600"
+          className="
+            flex items-center justify-between
+            rounded-[1.618rem] p-4
+            bg-red-50 hover:bg-red-100 border border-red-200
+            text-red-600
+          "
         >
           <div className="flex items-center gap-3">
             <FiLogOut />
             <span className="text-sm font-medium">Keluar</span>
           </div>
           <span className="text-xs">›</span>
-        </button>
-      </div>
-    </section>
+        </motion.button>
+      </section>
+    </main>
   );
 };
 
 /* -------------------------------------------------- */
-/*  Sub-komponen util menu                            */
+/*  Sub-komponen MenuItem                             */
 /* -------------------------------------------------- */
 const MenuItem = ({ icon, title, link }) => (
   <a
     href={link}
-    className="flex items-center justify-between p-4 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200"
+    className="
+      flex items-center justify-between
+      rounded-[1.618rem] p-4
+      bg-white/80 backdrop-blur-md
+      shadow-[0_2px_8px_rgba(0,0,0,0.04)]
+      border border-white/60
+      hover:shadow-[0_4px_14px_rgba(0,0,0,0.06)]
+      transition
+    "
   >
-    <div className="flex items-center gap-3 text-gray-700">
+    <div className="flex items-center gap-3 text-[#555]">
       {icon}
       <span className="text-sm font-medium">{title}</span>
     </div>
-    <span className="text-xs text-gray-400">›</span>
+    <span className="text-xs text-[#999]">›</span>
   </a>
 );
 

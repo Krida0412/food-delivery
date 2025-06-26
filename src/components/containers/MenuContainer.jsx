@@ -1,74 +1,85 @@
-import React, { useState } from 'react';
-import { IoFastFood } from 'react-icons/io5';
-import { categories } from '../../utils/data';
-import { motion } from 'framer-motion';
-import RowContainer from './RowContainer';
-import { useStateValue } from '../../context/StateProvider';
-const MenuContainer = () => {
-  const [filter, setFilter] = useState('chicken');
+import React, { useState } from "react";
+import { IoFastFood } from "react-icons/io5";
+import { motion } from "framer-motion";
+import { categories } from "../../utils/data";
+import RowContainer from "./RowContainer";
+import { useStateValue } from "../../context/StateProvider";
 
-  const [{ foodItems }, dispatch] = useStateValue();
+/* ---------- Palet ---------- */
+const PRIMARY = "#FE724C";
+const SECONDARY = "#FFD36E";
+const ACCENT_BG = "#F3F6FF";
+
+function MenuContainer() {
+  const [filter, setFilter] = useState("chicken");
+  const [{ foodItems }] = useStateValue();
 
   return (
-    <section className="w-full my-6" id="menu">
-      <div className="w-full flex flex-col items-center justify-center">
-        <p
-          className="text-2xl font-semibold capitalize
-           text-headingColor relative before:absolute
-            before:rounded-lg before:w-40 before:h-1
-             before:-bottom-2  before:left-0 before:bg-gradient-to-r from-orange-400 to-orange-600
-              transition-all ease-in-out mr-auto"
-        >
+    <section id="menu" className="w-full py-6 px-4 md:px-10">
+      {/* Heading */}
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-[#363636] relative inline-block">
           Menu Spesial Kami
-        </p>
-        <div className="w-full flex items-center justify-start lg:justify-center gap-8 py-6 overflow-x-scroll scrollbar-none">
-          {categories &&
-            categories.map((category) => (
-              <motion.div
-                whileTap={{ scale: 0.75 }}
-                key={category.id}
-                className={`group ${
-                  filter === category.urlParamName ? 'bg-cartNumBg' : 'bg-card'
-                } w-24 min-w-[94px] h-28 hover:bg-cartNumBg cursor-pointer rounded-lg drop-shadow-xl flex flex-col gap-3 items-center justify-center`}
-                onClick={() => setFilter(category.urlParamName)}
-              >
-                <div
-                  className={`w-10 h-10 rounded-full shadow-lg ${
-                    filter === category.urlParamName
-                      ? 'bg-white'
-                      : 'bg-cartNumBg'
-                  } group-hover:bg-white flex items-center justify-center`}
-                >
-                  <IoFastFood
-                    className={`${
-                      filter === category.urlParamName
-                        ? 'text-textColor'
-                        : 'text-white'
-                    } group-hover:text-textColor text-lg`}
-                  />
-                </div>
-                <p
-                  className={`text-sm ${
-                    filter === category.urlParamName
-                      ? 'text-white'
-                      : 'text-textColor'
-                  } group-hover:text-white`}
-                >
-                  {category.name}
-                </p>
-              </motion.div>
-            ))}
-        </div>
-
-        <div className="w-full">
-          <RowContainer
-            flag={false}
-            data={foodItems?.filter((n) => n.category === filter)}
+          <span
+            className="absolute left-0 -bottom-1 w-20 h-1 rounded-full"
+            style={{
+              background: "linear-gradient(to right, #FE724C, #FFD36E)",
+            }}
           />
-        </div>
+        </h2>
+      </div>
+
+      {/* Category Selector */}
+      <div className="flex gap-3 overflow-x-auto scrollbar-none pb-4">
+        {categories.map((cat) => {
+          const isActive = filter === cat.urlParamName;
+
+          return (
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              key={cat.id}
+              onClick={() => setFilter(cat.urlParamName)}
+              className={`
+                flex-shrink-0
+                px-4 py-3 min-w-[90px]
+                rounded-full border
+                flex flex-col items-center justify-center gap-2
+                transition-all duration-300 ease-in-out
+                shadow-sm
+                ${
+                  isActive
+                    ? "bg-[#FE724C] border-transparent text-white"
+                    : "bg-white border-[#E5E5E5] text-[#555]"
+                }
+              `}
+              style={{
+                boxShadow: isActive
+                  ? "0 4px 16px rgba(254,114,76,0.25)"
+                  : "0 1px 4px rgba(0,0,0,0.05)",
+              }}
+            >
+              <div
+                className={`w-10 h-10 flex items-center justify-center rounded-full ${
+                  isActive ? "bg-white text-[#FE724C]" : "bg-[#FE724C]/10 text-[#FE724C]"
+                }`}
+              >
+                <IoFastFood className="text-lg" />
+              </div>
+              <span className="text-sm font-medium">{cat.name}</span>
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {/* Produk Filtered */}
+      <div className="mt-6">
+        <RowContainer
+          flag={false}
+          data={foodItems?.filter((n) => n.category === filter)}
+        />
       </div>
     </section>
   );
-};
+}
 
 export default MenuContainer;

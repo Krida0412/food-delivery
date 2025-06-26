@@ -8,20 +8,121 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiChevronDown } from "react-icons/fi";
 
+/* ---------- Palet ---------- */
+const PRIMARY = "#FE724C";
+const BASE_BG = "#FFFCF9";
+
+/* ---------- Badge Status ---------- */
+const StatusBadge = ({ status }) => {
+  const CLASSES = {
+    Selesai:    "bg-green-100 text-green-600",
+    Dibatalkan: "bg-red-100 text-red-500",
+    Diproses:   "bg-yellow-100 text-yellow-600",
+    Pending:    "bg-gray-200 text-gray-600",
+  };
+  return (
+    <span
+      className={`px-3 py-[2px] text-xs font-semibold rounded-full whitespace-nowrap ${CLASSES[status] || CLASSES.Pending}`}
+    >
+      {status}
+    </span>
+  );
+};
+
+/* ---------- Kartu Riwayat ---------- */
+const OrderCard = ({ order }) => {
+  const [open, setOpen] = useState(false);
+  const created = order.createdAt?.toDate
+    ? order.createdAt.toDate()
+    : new Date(order.createdAt);
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className="
+        rounded-[1.618rem]
+        bg-white/80 backdrop-blur-md
+        shadow-[0_4px_16px_rgba(0,0,0,0.06)]
+        border border-white/60
+        p-4
+        overflow-hidden
+      "
+    >
+      {/* Header */}
+      <button
+        className="w-full flex items-center justify-between gap-3"
+        onClick={() => setOpen((p) => !p)}
+      >
+        <div className="text-left">
+          <p className="text-sm font-semibold text-[#363636]">
+            {order.itemName || "Pesanan"}
+          </p>
+          <p className="text-[11px] text-[#8A8A8A]">
+            {created.toLocaleString("id-ID", {
+              dateStyle: "medium",
+              timeStyle: "short",
+            })}
+          </p>
+        </div>
+
+        {/* Total & status */}
+        <div className="flex items-center gap-3">
+          <p className="text-sm font-bold" style={{ color: PRIMARY }}>
+            Rp {Number(order.total).toLocaleString("id-ID")}
+          </p>
+          <StatusBadge status={order.status || "Pending"} />
+          <FiChevronDown
+            className={`transition-transform ${open ? "rotate-180" : ""}`}
+          />
+        </div>
+      </button>
+
+      {/* Detail collapsible */}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            layout
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="mt-3 border-t border-[#EAEAEA] pt-3 text-xs text-[#555] space-y-1"
+          >
+            {order.items?.map((it, idx) => (
+              <div key={idx} className="flex justify-between">
+                <span>{it.title} × {it.qty}</span>
+                <span>Rp {(it.qty * it.price).toLocaleString("id-ID")}</span>
+              </div>
+            ))}
+
+            {order.alamat && (
+              <p className="pt-2 italic text-[#888]">📍 {order.alamat}</p>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+
+/* ---------- Halaman Riwayat ---------- */
 const RiwayatPage = () => {
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders]   = useState([]);
   const [loading, setLoading] = useState(true);
 
-  /* ------------------------------------------------------------------ */
-  /*  Ambil riwayat order milik user (realtime listener)                */
-  /* ------------------------------------------------------------------ */
+  /* Realtime listener Firestore + Auth */
   useEffect(() => {
     const auth = getAuth();
     const db   = getFirestore();
 
-    // Tunggu user ready
     const unsubAuth = auth.onAuthStateChanged((user) => {
+      setLoading(true);
       if (!user) {
         setOrders([]);
         setLoading(false);
@@ -40,72 +141,49 @@ const RiwayatPage = () => {
         setLoading(false);
       });
 
-      // bersih-bersih listener Firestore
       return () => unsub();
     });
 
-    // bersih-bersih listener Auth
     return () => unsubAuth();
   }, []);
 
-  /* ------------------------------------------------------------------ */
-  /*  UI                                                                */
-  /* ------------------------------------------------------------------ */
+  /* ---------- UI ---------- */
   if (loading) {
     return (
-      <div className="w-full flex justify-center items-center h-screen">
-        <p>Memuat riwayat…</p>
+      <div
+        className="flex items-center justify-center h-screen"
+        style={{ background: BASE_BG }}
+      >
+        <p className="text-[#555]">Memuat riwayat…</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md mx-auto px-4 pt-4 pb-32">
-      <h2 className="text-xl font-bold mb-4 text-center">Riwayat Pesanan</h2>
+    <main
+      className="w-full min-h-screen px-4 md:px-8 py-8"
+      style={{ background: BASE_BG }}
+    >
+      <header className="mb-6">
+        <h2 className="text-2xl font-bold text-[#363636] text-center">
+          Riwayat Pesanan
+        </h2>
+      </header>
 
       {orders.length === 0 ? (
-        <p className="text-center text-gray-500">Belum ada riwayat pesanan.</p>
+        <p className="text-center text-[#8A8A8A]">
+          Belum ada riwayat pesanan.
+        </p>
       ) : (
-        <div className="flex flex-col gap-4">
-          {orders.map((o) => (
-            <div
-              key={o.id}
-              className="bg-white rounded-xl p-4 shadow border border-gray-100"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-md font-semibold text-gray-800">
-                    {o.itemName ?? "Pesanan"}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {new Date(o.createdAt).toLocaleString("id-ID", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
-                  </p>
-                </div>
-
-                <span
-                  className={`text-xs px-3 py-1 rounded-full font-medium ${
-                    o.status === "Selesai"
-                      ? "bg-green-100 text-green-600"
-                      : o.status === "Dibatalkan"
-                      ? "bg-red-100 text-red-500"
-                      : "bg-yellow-100 text-yellow-600"
-                  }`}
-                >
-                  {o.status}
-                </span>
-              </div>
-
-              <p className="text-sm text-gray-700 mt-2">
-                Total: Rp {Number(o.total).toLocaleString("id-ID")}
-              </p>
-            </div>
-          ))}
-        </div>
+        <motion.div layout className="flex flex-col gap-4">
+          <AnimatePresence initial={false}>
+            {orders.map((o) => (
+              <OrderCard key={o.id} order={o} />
+            ))}
+          </AnimatePresence>
+        </motion.div>
       )}
-    </div>
+    </main>
   );
 };
 

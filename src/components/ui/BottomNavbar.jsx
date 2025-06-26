@@ -1,75 +1,87 @@
-import React from "react";
-import { NavLink, useLocation } from "react-router-dom";
-import {
-  MdHome,
-  MdAccessTime,
-  MdLocalOffer,
-  MdPerson,
-} from "react-icons/md";
-import { motion } from "framer-motion";
+import React from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { MdHome, MdAccessTime, MdLocalOffer, MdPerson } from 'react-icons/md';
+import { motion } from 'framer-motion';
 
+// ---------- Konfigurasi ----------
 const navItems = [
-  { label: "Home", icon: MdHome, path: "/main" },
-  { label: "Riwayat", icon: MdAccessTime, path: "/riwayat" },
-  { label: "Promo", icon: MdLocalOffer, path: "/promo" },
-  { label: "Profile", icon: MdPerson, path: "/profile" },
+  { label: 'Home', icon: MdHome, path: '/main' },
+  { label: 'Riwayat', icon: MdAccessTime, path: '/riwayat' },
+  { label: 'Promo', icon: MdLocalOffer, path: '/promo' },
+  { label: 'Profil', icon: MdPerson, path: '/profile' },
 ];
 
-const BottomNavbar = () => {
-  const location = useLocation();
+// ---------- Warna Tema ----------
+const activePill = 'bg-[#F3F6FF] border border-[#FFD36E]';
+const activeCircle = 'bg-[#FE724C]/90';
+const idleCircle = 'bg-[#FE724C]/10';
+
+function BottomNavbar() {
+  const { pathname } = useLocation();
 
   return (
-    <div className="fixed bottom-0 left-0 w-full bg-[#00BCD4] z-50 shadow-md border-t border-[#00ACC1]">
-      <div className="flex items-center justify-between px-4">
-        {navItems.map((item, i) => {
-          const isActive = location.pathname === item.path;
-          const Icon = item.icon;
+    <nav
+      className="
+    fixed bottom-0 left-0 w-full z-50
+    bg-white/80 backdrop-blur-lg
+    shadow-[0_-2px_20px_rgba(0,0,0,0.06)]
+    border-t border-t-white/40
+    rounded-t-[1.618rem]
+    pt-2 pb-[calc(1rem+env(safe-area-inset-bottom))]
+    min-h-[4.5rem]
+    "
+    >
+      <ul className="flex items-center justify-between px-6">
+        {navItems.map(({ label, icon: Icon, path }) => {
+          const isActive = pathname === path;
 
           return (
-            <NavLink
-              to={item.path}
-              key={i}
-              className="flex-1 flex flex-col items-center justify-center relative"
-            >
-              <div className="relative flex flex-col items-center justify-center">
+            <li key={path} className="flex-1">
+              <NavLink
+                to={path}
+                className="flex flex-col items-center justify-center relative"
+              >
+                {/* Floating pill */}
                 {isActive && (
-                  <motion.div
-                    layoutId="active-indicator"
-                    className="absolute -top-7 bg-white border border-yellow-100 rounded-full w-12 h-12"
+                  <motion.span
+                    layoutId="active-pill"
+                    transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                    className={`absolute -top-8 w-14 h-14 rounded-full ${activePill}`}
                   />
                 )}
 
-                <motion.div
+                {/* Icon wrapper */}
+                <motion.span
                   animate={{
-                    y: isActive ? -25 : 0,
-                    scale: isActive ? 1.05 : 1,
+                    y: isActive ? -26 : 0,
+                    scale: isActive ? 1.12 : 1,
                   }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  className={`relative z-10 w-10 h-10 flex items-center justify-center rounded-full ${
-                    isActive ? "bg-[#00BCD4] shadow-sm" : "bg-[#00BCD4]"
-                  }`}
+                  transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+                  className={`relative z-10 flex items-center justify-center
+                    w-11 h-11 rounded-full shadow-sm
+                    ${isActive ? activeCircle : idleCircle}`}
                 >
                   <Icon
-                    className={`text-2xl ${
-                      isActive ? "text-white" : "text-white/80"
-                    }`}
+                    className={`text-2xl transition-colors
+                      ${isActive ? 'text-white' : 'text-[#FE724C]'}`}
                   />
-                </motion.div>
+                </motion.span>
 
+                {/* Label */}
                 <span
-                  className={`text-xs mb-2 font-medium ${
-                    isActive ? "text-white" : "text-white/70"
-                  }`}
+                  className={`mt-[0.618rem] text-[0.75rem] font-medium
+                    transition-colors
+                    ${isActive ? 'text-[#FE724C]' : 'text-[#363636]/70'}`}
                 >
-                  {item.label}
+                  {label}
                 </span>
-              </div>
-            </NavLink>
+              </NavLink>
+            </li>
           );
         })}
-      </div>
-    </div>
+      </ul>
+    </nav>
   );
-};
+}
 
 export default BottomNavbar;
