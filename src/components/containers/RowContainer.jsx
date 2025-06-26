@@ -33,7 +33,7 @@ const RowContainer = ({ flag, data, scrollValue }) => {
         data.map((item) => (
           <div
             key={item?.id}
-            className="w-[180px] h-[240px] rounded-xl bg-white shadow-md hover:shadow-lg transition-all p-2 flex flex-col"
+            className="w-[166px] h-[240px] rounded-xl bg-white shadow-md hover:shadow-lg transition-all p-2 flex flex-col"
           >
             {/* Gambar Makanan */}
             <div className="w-full h-[120px] rounded-lg overflow-hidden bg-gray-100">

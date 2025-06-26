@@ -7,6 +7,10 @@ import { StateProvider } from "./context/StateProvider";
 import { initialState } from "./context/initialState";
 import reducer from "./context/reducer";
 import 'leaflet/dist/leaflet.css';
+
+// ✅ Tambahin ini
+import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Router>
@@ -17,3 +21,6 @@ root.render(
     </React.StrictMode>
   </Router>
 );
+
+// ✅ Aktifin service worker buat jadi PWA
+serviceWorkerRegistration.register();

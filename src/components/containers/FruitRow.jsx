@@ -28,7 +28,7 @@ const FruitRow = ({ data, scrollValue }) => {
       {data?.map((item) => (
         <div
           key={item.id}
-          className="min-w-[220px] flex-shrink-0 h-[260px] bg-white rounded-xl shadow-md hover:shadow-lg p-2 flex flex-col"
+          className="min-w-[200px] flex-shrink-0 h-[260px] bg-white rounded-xl shadow-md hover:shadow-lg p-2 flex flex-col"
         >
           <div className="w-full h-[120px] rounded-lg overflow-hidden bg-gray-100">
             <img
