@@ -1,21 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useStateValue } from '../../context/StateProvider';
 import CartItem from '../ui/CartItem';
 
+import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { app } from '../../firebase.config';
+
+const db = getFirestore(app);
+
 const CheckoutContainer = () => {
   const navigate = useNavigate();
   const [{ cartItems, user }] = useStateValue();
+  const [alamat, setAlamat] = useState('');
 
   const totalHarga = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
-  const ongkir = 2.5;
+  const ongkir = 2500;
   const totalPembayaran = totalHarga + ongkir;
 
-  const handleBayar = () => {
-    // Bisa diarahkan ke payment gateway, halaman sukses, dll
-    alert('Pembayaran berhasil! (Simulasi)');
-    navigate('/thankyou'); // Atau /success, tergantung routing kamu
+  const handleBayar = async () => {
+    if (!user) return alert('Kamu harus login terlebih dahulu!');
+    if (!alamat.trim()) return alert('Alamat pengiriman tidak boleh kosong!');
+
+    try {
+      await addDoc(collection(db, 'orders'), {
+        uid: user.uid,
+        alamat,
+        items: cartItems,
+        total: totalPembayaran,
+        createdAt: serverTimestamp(),
+      });
+
+      alert('Pembayaran berhasil!');
+      navigate('/thankyou');
+    } catch (error) {
+      console.error('Gagal menyimpan order:', error);
+      alert('Terjadi kesalahan saat menyimpan pesanan.');
+    }
   };
 
   return (
@@ -44,6 +65,8 @@ const CheckoutContainer = () => {
             className="w-full p-3 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-orange-400"
             rows="3"
             placeholder="Masukkan alamat lengkap pengiriman..."
+            value={alamat}
+            onChange={(e) => setAlamat(e.target.value)}
           ></textarea>
         </div>
 
@@ -51,15 +74,15 @@ const CheckoutContainer = () => {
         <div className="border-t pt-4 space-y-2 text-gray-600">
           <div className="flex justify-between">
             <span>Subtotal</span>
-            <span>Rp {totalHarga.toFixed(2)}</span>
+            <span>Rp {totalHarga.toLocaleString()}</span>
           </div>
           <div className="flex justify-between">
             <span>Ongkir</span>
-            <span>Rp {ongkir.toFixed(2)}</span>
+            <span>Rp {ongkir.toLocaleString()}</span>
           </div>
           <div className="flex justify-between font-semibold text-lg text-gray-800 border-t pt-2">
             <span>Total</span>
-            <span>Rp {totalPembayaran.toFixed(2)}</span>
+            <span>Rp {totalPembayaran.toLocaleString()}</span>
           </div>
         </div>
 

@@ -33,39 +33,38 @@ const RowContainer = ({ flag, data, scrollValue }) => {
         data.map((item) => (
           <div
             key={item?.id}
-            className="w-300 min-w-[300px] md:w-340 md:min-w-[340px] h-[225px] bg-cardOverlay rounded-lg my-4 p-2 backdrop-blur-lg hover:drop-shadow-sm flex flex-col items-center justify-between"
+            className="w-[180px] h-[240px] rounded-xl bg-white shadow-md hover:shadow-lg transition-all p-2 flex flex-col"
           >
-            <div className="w-full flex items-center justify-between">
-              <motion.div
-                className="w-40 h-40 -mt-8 drop-shadow-2xl"
-                whileHover={{ scale: 1.2 }}
-              >
-                <img
-                  src={item?.imageURL}
-                  alt=""
-                  className="w-full h-full object-contain"
-                />
-              </motion.div>
-              <motion.div
-                whileTap={{ scale: 0.75 }}
-                className="w-9 h-9 rounded-full bg-red-600 flex items-center justify-center cursor-pointer hover:shadow-md"
-                onClick={() => addtocart(item)}
-              >
-                <MdShoppingBasket className="text-white text-xl" />
-              </motion.div>
+            {/* Gambar Makanan */}
+            <div className="w-full h-[120px] rounded-lg overflow-hidden bg-gray-100">
+              <img
+                src={item?.imageURL}
+                alt={item?.title}
+                className="w-full h-full object-cover"
+              />
             </div>
-            <div className="w-full flex flex-col items-end justify-end">
-              <p className=" text-textColor font-semibold text-base md:text-lg">
-                {item?.title}
-              </p>
-              <p className="mt-1 text-sm text-gray-500">
-                {item?.calories} Kalori
-              </p>
-              <div className="flex items-center gap-8">
-                <p className="text-lg text-headingColor font-semibold">
-                  <span className="text-sm text-red-500">Rp</span>
-                  {item?.price}
+
+            {/* Nama + Kalori */}
+            <div className="flex-1 mt-2 flex flex-col justify-between">
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-gray-800 line-clamp-2 leading-tight">
+                  {item?.title}
+                </h3>
+                <p className="text-xs text-gray-500">{item?.calories} Kalori</p>
+              </div>
+
+              {/* Harga + Tombol */}
+              <div className="mt-2 flex items-center justify-between">
+                <p className="text-sm font-bold text-red-500">
+                  Rp{item?.price}
                 </p>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => addtocart(item)}
+                  className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white hover:bg-red-600 transition"
+                >
+                  <MdShoppingBasket className="text-[18px]" />
+                </motion.button>
               </div>
             </div>
           </div>

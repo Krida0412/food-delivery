@@ -9,7 +9,7 @@ import {
 import { motion } from "framer-motion";
 
 const navItems = [
-  { label: "Home", icon: MdHome, path: "/" },
+  { label: "Home", icon: MdHome, path: "/main" },
   { label: "Riwayat", icon: MdAccessTime, path: "/riwayat" },
   { label: "Promo", icon: MdLocalOffer, path: "/promo" },
   { label: "Profile", icon: MdPerson, path: "/profile" },
@@ -19,8 +19,8 @@ const BottomNavbar = () => {
   const location = useLocation();
 
   return (
-    <div className="fixed bottom-0 left-0 w-full bg-[#00BCD4] z-50 shadow-xl">
-      <div className="relative flex items-center justify-between px-6 py-2">
+    <div className="fixed bottom-0 left-0 w-full bg-[#00BCD4] z-50 shadow-md border-t border-[#00ACC1]">
+      <div className="flex items-center justify-between px-4">
         {navItems.map((item, i) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
@@ -35,27 +35,29 @@ const BottomNavbar = () => {
                 {isActive && (
                   <motion.div
                     layoutId="active-indicator"
-                    className="absolute -top-9 bg-[#ffffff] border border-yellow-100 rounded-full w-[70px] h-[68px]"
+                    className="absolute -top-7 bg-white border border-yellow-100 rounded-full w-12 h-12"
                   />
                 )}
+
                 <motion.div
                   animate={{
-                    y: isActive ? -30 : 0,
-                    scale: isActive ? 1.1 : 1,
+                    y: isActive ? -25 : 0,
+                    scale: isActive ? 1.05 : 1,
                   }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  className={`relative z-10 w-12 top-1 h-12 flex items-center justify-center rounded-full ${
-                    isActive ? "bg-[#00BCD4] shadow-md" : "bg-[#00BCD4]"
+                  className={`relative z-10 w-10 h-10 flex items-center justify-center rounded-full ${
+                    isActive ? "bg-[#00BCD4] shadow-sm" : "bg-[#00BCD4]"
                   }`}
                 >
                   <Icon
-                    className={`text-3xl ${
-                      isActive ? "text-[#ffffff]" : "text-white"
+                    className={`text-2xl ${
+                      isActive ? "text-white" : "text-white/80"
                     }`}
                   />
                 </motion.div>
+
                 <span
-                  className={`text-sm mb-1 font-medium ${
+                  className={`text-xs mb-2 font-medium ${
                     isActive ? "text-white" : "text-white/70"
                   }`}
                 >

@@ -21,13 +21,12 @@ const SignIn = () => {
 
   const loginWithGoogle = async () => {
     try {
-      const {
-        user: { providerData },
-      } = await signInWithPopup(firebaseAuth, provider);
+      const { user } = await signInWithPopup(firebaseAuth, provider);
 
-      dispatch({ type: actionType.SET_USER, user: providerData[0] });
-      localStorage.setItem('user', JSON.stringify(providerData[0]));
-      navigate('/');
+      dispatch({ type: actionType.SET_USER, user });
+      localStorage.setItem('user', JSON.stringify(user));
+
+      navigate('/main');
     } catch (err) {
       console.error('Login Google gagal:', err);
     }
@@ -35,14 +34,16 @@ const SignIn = () => {
 
   const loginWithEmailPassword = async () => {
     try {
-      const result = await signInWithEmailAndPassword(
+      const { user } = await signInWithEmailAndPassword(
         firebaseAuth,
         email,
         password,
       );
-      dispatch({ type: actionType.SET_USER, user: result.user });
-      localStorage.setItem('user', JSON.stringify(result.user));
-      navigate('/');
+
+      dispatch({ type: actionType.SET_USER, user });
+      localStorage.setItem('user', JSON.stringify(user));
+
+      navigate('/main');
     } catch (err) {
       alert('Email atau password salah!');
       console.error('Login Email gagal:', err);

@@ -6,6 +6,7 @@ import { useStateValue } from '../../context/StateProvider';
 import MenuContainer from './MenuContainer';
 import CartContainer from './CartContainer';
 import UserMap from '../Maps/UserMap';
+import FruitRow from './FruitRow';
 
 // ✅ Import gambar dengan benar dari src
 import promoBanner from '../../img/c3.png';
@@ -21,32 +22,32 @@ const MainContainer = () => {
       <HomeContainer />
       <UserMap />
 
-      {/* ✅ Bagian Buah Segar */}
-      <section className="w-full my-6 px-4 md:px-8 lg:px-16">
+      {/* Buah Segar Section */}
+      <section className="w-full py-5 md:px-8 lg:px-16">
         <div className="w-full flex items-center justify-between">
-          <p className="text-2xl font-semibold capitalize text-headingColor relative before:absolute before:rounded-lg before:w-32 before:h-1 before:-bottom-2 before:left-0 before:bg-gradient-to-r from-orange-400 to-orange-600 transition-all ease-in-out">
+          <p className="text-2xl font-semibold mb-3 capitalize text-headingColor relative before:absolute before:rounded-lg before:w-32 before:h-1 before:-bottom-2 before:left-0 before:bg-gradient-to-r from-orange-400 to-orange-600">
             Buah Segar Pilihan Kami
           </p>
+
           <div className="hidden md:flex gap-3 items-center">
-            <div
-              className="animate-bounce w-10 h-10 rounded-lg bg-orange-300 hover:bg-orange-500 cursor-pointer hover:shadow-lg flex items-center justify-center"
-              onClick={() => setScrollValue(-2600)}
+            <button
+              onClick={() => setScrollValue(-200)}
+              className="w-10 h-10 rounded-lg bg-orange-300 hover:bg-orange-500 flex items-center justify-center hover:shadow-lg"
             >
               <MdChevronLeft className="text-lg text-white" />
-            </div>
-            <div
-              className="animate-bounce w-10 h-10 rounded-lg bg-orange-300 hover:bg-orange-500 cursor-pointer hover:shadow-lg flex items-center justify-center"
-              onClick={() => setScrollValue(+2600)}
+            </button>
+            <button
+              onClick={() => setScrollValue(200)}
+              className="w-10 h-10 rounded-lg bg-orange-300 hover:bg-orange-500 flex items-center justify-center hover:shadow-lg"
             >
               <MdChevronRight className="text-lg text-white" />
-            </div>
+            </button>
           </div>
         </div>
 
-        <RowContainer
+        <FruitRow
           scrollValue={scrollValue}
-          flag={true}
-          data={foodItems?.filter((n) => n.category === 'fruits')}
+          data={foodItems?.filter((item) => item.category === 'fruits')}
         />
       </section>
 
