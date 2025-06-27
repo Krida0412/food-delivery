@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Logo from '../../img/logo.png';
+import Logo from '../../img/logo-food.png';
 import Avatar from '../../img/avatar.png';
 import { MdShoppingBasket, MdAdd, MdLogout } from 'react-icons/md';
 import { motion } from 'framer-motion';
@@ -39,7 +39,7 @@ const Header = () => {
             whileTap={{ scale: 0.6 }}
             className="text-headingColor text-xl font-bold"
           >
-            Chick
+            Foodie
           </motion.p>
         </Link>
 
