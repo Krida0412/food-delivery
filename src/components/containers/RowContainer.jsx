@@ -45,7 +45,7 @@ const RowContainer = ({ flag, data, scrollValue }) => {
           <div
             key={item?.id}
             className="
-              w-[150px] h-[250px] rounded-xl
+              w-[145px] h-[250px] rounded-xl
               border border-[#EFEFEF]
               shadow-[0_4px_16px_rgba(0,0,0,0.04)]
               hover:shadow-[0_6px_20px_rgba(254,114,76,0.20)]
