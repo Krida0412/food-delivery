@@ -60,7 +60,7 @@ function PromoPage() {
 
   return (
     <main
-      className="w-full min-h-screen px-4 md:px-8 py-8"
+      className="w-full min-h-screen px-4 md:px-8 pt-20 pb-32"
       style={{ background: BASE_BG }}
     >
       {/* Heading */}

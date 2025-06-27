@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   getFirestore,
   collection,
@@ -6,26 +6,28 @@ import {
   where,
   orderBy,
   onSnapshot,
-} from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import { motion, AnimatePresence } from "framer-motion";
-import { FiChevronDown } from "react-icons/fi";
+} from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiChevronDown } from 'react-icons/fi';
 
 /* ---------- Palet ---------- */
-const PRIMARY = "#FE724C";
-const BASE_BG = "#FFFCF9";
+const PRIMARY = '#FE724C';
+const BASE_BG = '#FFFCF9';
 
 /* ---------- Badge Status ---------- */
 const StatusBadge = ({ status }) => {
   const CLASSES = {
-    Selesai:    "bg-green-100 text-green-600",
-    Dibatalkan: "bg-red-100 text-red-500",
-    Diproses:   "bg-yellow-100 text-yellow-600",
-    Pending:    "bg-gray-200 text-gray-600",
+    Selesai: 'bg-green-100 text-green-600',
+    Dibatalkan: 'bg-red-100 text-red-500',
+    Diproses: 'bg-yellow-100 text-yellow-600',
+    Pending: 'bg-gray-200 text-gray-600',
   };
   return (
     <span
-      className={`px-3 py-[2px] text-xs font-semibold rounded-full whitespace-nowrap ${CLASSES[status] || CLASSES.Pending}`}
+      className={`px-3 py-[2px] text-xs font-semibold rounded-full whitespace-nowrap ${
+        CLASSES[status] || CLASSES.Pending
+      }`}
     >
       {status}
     </span>
@@ -61,12 +63,12 @@ const OrderCard = ({ order }) => {
       >
         <div className="text-left">
           <p className="text-sm font-semibold text-[#363636]">
-            {order.itemName || "Pesanan"}
+            {order.itemName || 'Pesanan'}
           </p>
           <p className="text-[11px] text-[#8A8A8A]">
-            {created.toLocaleString("id-ID", {
-              dateStyle: "medium",
-              timeStyle: "short",
+            {created.toLocaleString('id-ID', {
+              dateStyle: 'medium',
+              timeStyle: 'short',
             })}
           </p>
         </div>
@@ -74,11 +76,11 @@ const OrderCard = ({ order }) => {
         {/* Total & status */}
         <div className="flex items-center gap-3">
           <p className="text-sm font-bold" style={{ color: PRIMARY }}>
-            Rp {Number(order.total).toLocaleString("id-ID")}
+            Rp {Number(order.total).toLocaleString('id-ID')}
           </p>
-          <StatusBadge status={order.status || "Pending"} />
+          <StatusBadge status={order.status || 'Pending'} />
           <FiChevronDown
-            className={`transition-transform ${open ? "rotate-180" : ""}`}
+            className={`transition-transform ${open ? 'rotate-180' : ''}`}
           />
         </div>
       </button>
@@ -89,15 +91,17 @@ const OrderCard = ({ order }) => {
           <motion.div
             layout
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
+            animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="mt-3 border-t border-[#EAEAEA] pt-3 text-xs text-[#555] space-y-1"
           >
             {order.items?.map((it, idx) => (
               <div key={idx} className="flex justify-between">
-                <span>{it.title} × {it.qty}</span>
-                <span>Rp {(it.qty * it.price).toLocaleString("id-ID")}</span>
+                <span>
+                  {it.title} × {it.qty}
+                </span>
+                <span>Rp {(it.qty * it.price).toLocaleString('id-ID')}</span>
               </div>
             ))}
 
@@ -113,13 +117,13 @@ const OrderCard = ({ order }) => {
 
 /* ---------- Halaman Riwayat ---------- */
 const RiwayatPage = () => {
-  const [orders, setOrders]   = useState([]);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   /* Realtime listener Firestore + Auth */
   useEffect(() => {
     const auth = getAuth();
-    const db   = getFirestore();
+    const db = getFirestore();
 
     const unsubAuth = auth.onAuthStateChanged((user) => {
       setLoading(true);
@@ -130,9 +134,9 @@ const RiwayatPage = () => {
       }
 
       const q = query(
-        collection(db, "orders"),
-        where("uid", "==", user.uid),
-        orderBy("createdAt", "desc")
+        collection(db, 'orders'),
+        where('uid', '==', user.uid),
+        orderBy('createdAt', 'desc'),
       );
 
       const unsub = onSnapshot(q, (snap) => {
@@ -161,7 +165,7 @@ const RiwayatPage = () => {
 
   return (
     <main
-      className="w-full min-h-screen px-4 md:px-8 py-8"
+      className="w-full min-h-screen px-4 md:px-8 py-20"
       style={{ background: BASE_BG }}
     >
       <header className="mb-6">
@@ -171,9 +175,7 @@ const RiwayatPage = () => {
       </header>
 
       {orders.length === 0 ? (
-        <p className="text-center text-[#8A8A8A]">
-          Belum ada riwayat pesanan.
-        </p>
+        <p className="text-center text-[#8A8A8A]">Belum ada riwayat pesanan.</p>
       ) : (
         <motion.div layout className="flex flex-col gap-4">
           <AnimatePresence initial={false}>

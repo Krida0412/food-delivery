@@ -1,12 +1,13 @@
-import React, { useEffect, useRef } from "react";
-import { MdShoppingBasket } from "react-icons/md";
-import { motion } from "framer-motion";
-import { useStateValue } from "../../context/StateProvider";
-import { actionType } from "../../context/reducer";
+import React, { useEffect, useRef } from 'react';
+import { MdShoppingBasket } from 'react-icons/md';
+import { motion } from 'framer-motion';
+import { useStateValue } from '../../context/StateProvider';
+import { actionType } from '../../context/reducer';
+import { addItem } from '../../utils/cart';
 
 /* ---------- Warna tema (match BottomNavbar) ---------- */
-const PRIMARY   = "#FE724C";   // orange
-const ACCENT_BG = "rgba(255,211,110,0.15)"; // soft yellow backdrop
+const PRIMARY = '#FE724C'; // orange
+const ACCENT_BG = 'rgba(255,211,110,0.15)'; // soft yellow backdrop
 
 function FruitRow({ data, scrollValue }) {
   const rowRef = useRef();
@@ -18,9 +19,13 @@ function FruitRow({ data, scrollValue }) {
   }, [scrollValue]);
 
   const addToCart = (item) => {
-    const updated = [...cartItems, item];
-    dispatch({ type: actionType.SET_CARTITEMS, cartItems: updated });
-    localStorage.setItem("cartItems", JSON.stringify(updated));
+    const updated = addItem(cartItems, item);
+
+    dispatch({
+      type: actionType.SET_CARTITEMS,
+      cartItems: updated,
+    });
+    localStorage.setItem('cartItems', JSON.stringify(updated));
   };
 
   return (

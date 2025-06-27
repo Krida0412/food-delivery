@@ -18,7 +18,7 @@ const MainLayout = ({ children }) => {
 
       {/* Isi halaman */}
       <main
-        className="pt-[3.7rem] pb-[5.5rem] px-4 md:px-16 w-full max-w-screen-md mx-auto"
+        className=" px-4 md:px-16 w-full max-w-screen-md mx-auto"
         style={{ scrollBehavior: "smooth" }}
       >
         {children}

@@ -13,6 +13,10 @@ import ProfilePage from '../pages/ProfilePage';
 import SettingsPage from '../pages/SettingsPage';
 import RiwayatPage from '../pages/RiwayatPage';
 import ThankYouPage from '../pages/ThankYouPage';
+import AdminPage from '../pages/AdminPage';
+import AdminLayout from '../layouts/AdminLayout';
+import CourierLayout from '../layouts/CourierLayout';
+import CourierPage from '../pages/CourierPage';
 
 const AppRoutes = () => {
   return (
@@ -98,6 +102,28 @@ const AppRoutes = () => {
             <MainLayout>
               <ThankYouPage />
             </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <AdminPage />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/courier"
+        element={
+          <ProtectedRoute>
+            <CourierLayout>
+              <CourierPage />
+            </CourierLayout>
           </ProtectedRoute>
         }
       />

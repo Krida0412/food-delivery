@@ -15,7 +15,7 @@ function MenuContainer() {
   const [{ foodItems }] = useStateValue();
 
   return (
-    <section id="menu" className="w-full py-6 px-4 md:px-10">
+    <section id="menu" className="w-full py-0 px-0 md:px-10">
       {/* Heading */}
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-[#363636] relative inline-block">

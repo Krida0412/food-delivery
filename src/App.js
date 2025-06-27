@@ -1,9 +1,10 @@
 import React, { useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
-import AppRoutes from "./routes"; // ini nanti ambil index.jsx
+import AppRoutes from "./routes"; // rute utama
 import { useStateValue } from "./context/StateProvider";
 import { getAllFoodItems } from "./utils/firebaseFunctions";
 import { actionType } from "./context/reducer";
+import { Toaster } from "react-hot-toast"; // ← Tambahan
 
 const App = () => {
   const [{ foodItems }, dispatch] = useStateValue();
@@ -21,9 +22,15 @@ const App = () => {
   }, []);
 
   return (
-    <AnimatePresence mode="wait">
-      <AppRoutes />
-    </AnimatePresence>
+    <>
+      <Toaster
+        position="top-right"
+        toastOptions={{ duration: 3000 }}
+      />
+      <AnimatePresence mode="wait">
+        <AppRoutes />
+      </AnimatePresence>
+    </>
   );
 };
 

@@ -6,7 +6,7 @@ const Footer = () => {
   return (
     <div
       id="Footer"
-      className=" border-t mx-auto container xl:px-20 lg:px-12 sm:px-6 px-4 py-12"
+      className=" border-t mx-auto container xl:px-20 lg:px-12 sm:px-6 px-4 "
     >
       <div className="flex flex-col items-center justify-center">
         <div>

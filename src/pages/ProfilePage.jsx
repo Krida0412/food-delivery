@@ -130,7 +130,7 @@ const ProfilePage = () => {
   /* -------------------- UI utama -------------------- */
   return (
     <main
-      className="w-full min-h-screen px-4 md:px-8 py-8"
+      className="w-full min-h-screen px-4 md:px-8 py-20"
       style={{ background: BASE_BG }}
     >
       {/* HEADER PROFILE */}

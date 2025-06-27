@@ -1,25 +1,28 @@
-import React, { useEffect, useRef } from "react";
-import { MdShoppingBasket } from "react-icons/md";
-import { motion } from "framer-motion";
-import notFound from "../../img/NotFound.svg";
-import { useStateValue } from "../../context/StateProvider";
-import { actionType } from "../../context/reducer";
+import React, { useEffect, useRef } from 'react';
+import { MdShoppingBasket } from 'react-icons/md';
+import { motion } from 'framer-motion';
+import notFound from '../../img/NotFound.svg';
+import { useStateValue } from '../../context/StateProvider';
+import { actionType } from '../../context/reducer';
+import { addItem } from "../../utils/cart";
 
 /* ---------- Warna tema (match BottomNavbar) ---------- */
-const PRIMARY   = "#FE724C";  // orange
-const SECONDARY = "#FFD36E";  // soft yellow
-const ACCENT_BG = "#F3F6FF";  // pill-ish light
+const PRIMARY = '#FE724C'; // orange
+const SECONDARY = '#FFD36E'; // soft yellow
+const ACCENT_BG = '#F3F6FF'; // pill-ish light
 
 const RowContainer = ({ flag, data, scrollValue }) => {
   const rowContainer = useRef();
   const [{ cartItems }, dispatch] = useStateValue();
 
   const addToCart = (item) => {
+    const updated = addItem(cartItems, item);
+
     dispatch({
       type: actionType.SET_CARTITEMS,
-      cartItems: [...cartItems, item],
+      cartItems: updated,
     });
-    localStorage.setItem("cartItems", JSON.stringify([...cartItems, item]));
+    localStorage.setItem('cartItems', JSON.stringify(updated));
   };
 
   /* scroll auto */
@@ -30,10 +33,10 @@ const RowContainer = ({ flag, data, scrollValue }) => {
   return (
     <div
       ref={rowContainer}
-      className={`w-full flex items-center gap-3 mb-12 scroll-smooth ${
+      className={`w-full flex items-center gap-3 py-1 mb-12 scroll-smooth ${
         flag
-          ? "overflow-x-scroll scrollbar-none"
-          : "overflow-x-hidden flex-wrap justify-center"
+          ? 'overflow-x-scroll scrollbar-none'
+          : 'overflow-x-hidden flex-wrap justify-center'
       }`}
     >
       {/* ----------- Card list ----------- */}
@@ -42,7 +45,7 @@ const RowContainer = ({ flag, data, scrollValue }) => {
           <div
             key={item?.id}
             className="
-              w-[166px] h-[250px] rounded-xl bg-white
+              w-[155px] h-[250px] rounded-xl
               border border-[#EFEFEF]
               shadow-[0_4px_16px_rgba(0,0,0,0.04)]
               hover:shadow-[0_6px_20px_rgba(254,114,76,0.20)]
@@ -72,10 +75,7 @@ const RowContainer = ({ flag, data, scrollValue }) => {
 
               {/* Harga + Button */}
               <div className="mt-2 flex items-center justify-between">
-                <p
-                  className="text-sm font-bold"
-                  style={{ color: PRIMARY }}
-                >
+                <p className="text-sm font-bold" style={{ color: PRIMARY }}>
                   Rp{item?.price}
                 </p>
                 <motion.button

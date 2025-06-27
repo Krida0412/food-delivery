@@ -23,7 +23,7 @@ const MainContainer = () => {
   useEffect(() => {}, [scrollValue]);
 
   return (
-    <div className="w-full flex flex-col items-center justify-center">
+    <div className="w-full flex flex-col items-center justify-center py-20">
       {/* Hero */}
       <HomeContainer />
 
@@ -31,7 +31,7 @@ const MainContainer = () => {
       <UserMap />
 
       {/* ---------- Section Buah Segar ---------- */}
-      <section className="w-full py-8 md:px-8 lg:px-16">
+      <section className="w-full pt-8  md:px-8 lg:px-16">
         {/* Heading + tombol scroll */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="relative text-2xl md:text-3xl font-bold text-[#363636]">
