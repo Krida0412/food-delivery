@@ -25,3 +25,4 @@ yarn-error.log*
 
 # ignore project-level environment files
 midtrans-backend/.env
+.env

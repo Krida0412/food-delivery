@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { motion } from "framer-motion";
+import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useStateValue } from "../../context/StateProvider";
 import {
@@ -13,17 +14,29 @@ import {
 } from "firebase/firestore";
 import { app } from "../../firebase.config";
 
-/* ---------- Firebase ---------- */
-const db = getFirestore(app);
+/* ---------- konstanta & util ---------- */
+const db         = getFirestore(app);
+const PRIMARY    = "#FE724C";
+const BASE_BG    = "#FFFCF9";
+const ACCENT_BG  = "rgba(255,211,110,0.15)";
+const BACKEND    = process.env.REACT_APP_BACKEND_URL;
+const CLIENT_KEY = process.env.REACT_APP_MIDTRANS_CLIENT_KEY;
 
-/* ---------- Palet ---------- */
-const PRIMARY   = "#FE724C";
-const BASE_BG   = "#FFFCF9";
-const ACCENT_BG = "rgba(255,211,110,0.15)";
+/* ---------- inject snap.js sekali saja ---------- */
+function useMidtrans(clientKey) {
+  useEffect(() => {
+    if (!clientKey) return;
 
-/* -------------------------------------------------------------------- */
-/*  Komponen kecil – item keranjang (read-only)                          */
-/* -------------------------------------------------------------------- */
+    const s = document.createElement("script");
+    s.src = "https://app.sandbox.midtrans.com/snap/snap.js";
+    s.setAttribute("data-client-key", clientKey);
+    s.async = true;
+    document.body.appendChild(s);
+    return () => document.body.removeChild(s);
+  }, [clientKey]);
+}
+
+/* ---------- Item keranjang read-only ---------- */
 const CheckoutItem = ({ item }) => (
   <div
     className="
@@ -36,11 +49,7 @@ const CheckoutItem = ({ item }) => (
       className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0"
       style={{ background: ACCENT_BG }}
     >
-      <img
-        src={item.imageURL}
-        alt={item.title}
-        className="w-full h-full object-cover"
-      />
+      <img src={item.imageURL} alt={item.title} className="w-full h-full object-cover" />
     </div>
 
     <div className="flex flex-col gap-[0.2rem]">
@@ -59,50 +68,57 @@ const CheckoutItem = ({ item }) => (
   </div>
 );
 
-/* -------------------------------------------------------------------- */
-/*  Halaman Checkout                                                     */
-/* -------------------------------------------------------------------- */
+/* ---------- Halaman Checkout ---------- */
 export default function CheckoutContainer() {
-  const navigate                 = useNavigate();
-  const [{ cartItems, user }]    = useStateValue();
+  useMidtrans(CLIENT_KEY);
 
-  const [alamat, setAlamat]      = useState("");
-  const [coords, setCoords]      = useState(null);
-  const [loadingLoc, setLoadLoc] = useState(true);
+  const navigate                     = useNavigate();
+  const [{ cartItems, user }]        = useStateValue();
 
-  /* ---------------- Ambil lokasi + reverse-geocode ------------------ */
+  const [alamat, setAlamat]          = useState("");
+  const [coords, setCoords]          = useState(null);
+  const [locLoading, setLocLoading]  = useState(true);
+  const [paying, setPaying]          = useState(false);
+
+  /* ambil lokasi + reverse geocode */
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       async ({ coords: { latitude, longitude } }) => {
         setCoords([latitude, longitude]);
+
         try {
-          const res  = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
+          const resp = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
           );
-          const data = await res.json();
-          setAlamat(data.display_name || `${latitude}, ${longitude}`);
+          const json = await resp.json();
+          if (json.display_name) setAlamat(json.display_name);
+        } catch {
+          // diam-diam fallback ke lat/lon
+          setAlamat(`${latitude}, ${longitude}`);
         } finally {
-          setLoadLoc(false);
+          setLocLoading(false);
         }
       },
-      () => setLoadLoc(false),
-      { enableHighAccuracy: true },
+      () => setLocLoading(false),
+      { enableHighAccuracy: true }
     );
   }, []);
 
-  /* --------------------------- Hitung biaya ------------------------- */
+  /* hitung biaya */
   const subtotal   = cartItems.reduce((s, it) => s + it.qty * it.price, 0);
   const shipping   = 2500;
   const grandTotal = subtotal + shipping;
 
-  /* ------------------ Handler tombol “Bayar Sekarang” --------------- */
+  /* bayar */
   const handleBayar = async () => {
-    if (!user)          return alert("Kamu harus login terlebih dahulu!");
-    if (!alamat.trim()) return alert("Alamat pengiriman tidak boleh kosong!");
+    if (!user)          return toast.error("Kamu harus login terlebih dahulu!");
+    if (!alamat.trim()) return toast.error("Alamat pengiriman belum diisi!");
+
+    setPaying(true);
 
     try {
-      /* 1️⃣  Minta Snap-token ke backend Node (midtrans-backend) */
-      const res = await fetch("http://localhost:4000/api/transaction", {
+      /* 1. dapatkan Snap token */
+      const res = await fetch(`${BACKEND}/api/transaction`, {
         method : "POST",
         headers: { "Content-Type": "application/json" },
         body   : JSON.stringify({
@@ -111,50 +127,41 @@ export default function CheckoutContainer() {
           customerName : user.displayName || "Pelanggan",
         }),
       });
-      const { token, message } = await res.json();
-      if (!token) throw new Error(message || "Gagal mendapatkan token");
+      const json = await res.json();
+      if (!json.token) throw new Error(json.message || "Token null");
 
-      /* 2️⃣ Panggil Snap popup */
+      /* 2. panggil Snap popup */
       // eslint-disable-next-line no-undef
-      window.snap.pay(token, {
+      window.snap.pay(json.token, {
         onSuccess: async (snapResult) => {
-          /* ✅ Simpan order ke Firestore */
           await addDoc(collection(db, "orders"), {
             uid       : user.uid,
             alamat,
             items     : cartItems,
             total     : grandTotal,
-            snapResult,          // simpan detail transaksi
+            snapResult,
             status    : "Pending",
             createdAt : serverTimestamp(),
           });
-          alert("Pembayaran berhasil!");
+          toast.success("Pembayaran berhasil!");
           navigate("/thankyou");
         },
-        onPending: (snapResult) => {
-          alert("Pembayaran masih pending, silakan selesaikan nanti.");
-          console.log("Pending:", snapResult);
-        },
-        onError: (err) => {
-          console.error("Snap error:", err);
-          alert("Terjadi kesalahan pembayaran.");
-        },
-        onClose: () => {
-          console.log("User menutup popup tanpa menyelesaikan pembayaran");
-        },
+        onPending: () => toast("Transaksi pending, selesaikan nanti 🙏"),
+        onError  : () => toast.error("Pembayaran gagal!"),
+        onClose  : () => toast("Kamu menutup popup pembayaran."),
       });
     } catch (err) {
-      console.error("handleBayar err:", err);
-      alert(err.message || "Terjadi kesalahan saat membuat transaksi.");
+      console.error(err);
+      toast.error(err.message || "Gagal membuat transaksi");
+    } finally {
+      setPaying(false);
     }
   };
 
-  /* ------------------------------- UI ------------------------------- */
+  /* ---------------------------- UI ---------------------------- */
   return (
-    <main
-      className="w-full min-h-screen md:px-10 pt-10 pb-28 flex flex-col gap-6"
-      style={{ background: BASE_BG }}
-    >
+    <main className="w-full min-h-screen md:px-10 pt-10 pb-28 flex flex-col gap-6" style={{ background: BASE_BG }}>
+      <Toaster />
       <h2 className="text-2xl font-bold text-[#363636]">Checkout</h2>
 
       <section
@@ -164,7 +171,7 @@ export default function CheckoutContainer() {
           shadow-[0_8px_24px_rgba(0,0,0,0.06)] border border-white/40
         "
       >
-        {/* ---------- Daftar produk ---------- */}
+        {/* daftar produk */}
         <div>
           <h3 className="text-lg font-semibold text-[#363636] mb-4">
             Produk dalam Keranjang
@@ -180,7 +187,7 @@ export default function CheckoutContainer() {
           )}
         </div>
 
-        {/* ---------- Alamat + peta ---------- */}
+        {/* alamat */}
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-[#363636]">
             Alamat Pengiriman
@@ -189,9 +196,7 @@ export default function CheckoutContainer() {
             rows="3"
             value={alamat}
             onChange={(e) => setAlamat(e.target.value)}
-            placeholder={
-              loadingLoc ? "Mengambil lokasi…" : "Alamat tidak ditemukan"
-            }
+            placeholder={locLoading ? "Mengambil lokasi…" : "Tulis alamat lengkap"}
             className="
               w-full p-3 resize-none rounded-md
               bg-white/70 backdrop-blur
@@ -216,7 +221,7 @@ export default function CheckoutContainer() {
           )}
         </div>
 
-        {/* ---------- Ringkasan ---------- */}
+        {/* ringkasan */}
         <div className="space-y-3 text-[#555]">
           <div className="flex justify-between text-sm">
             <span>Subtotal</span>
@@ -235,20 +240,20 @@ export default function CheckoutContainer() {
           </div>
         </div>
 
-        {/* ---------- Tombol bayar ---------- */}
+        {/* tombol bayar */}
         <motion.button
-          whileTap={{ scale: 0.95 }}
+          whileTap={{ scale: 0.96 }}
+          disabled={!cartItems.length || paying}
           onClick={handleBayar}
-          disabled={!cartItems.length}
           className="
             w-full py-[0.9rem] rounded-full
             text-white text-base font-medium
             shadow-[0_4px_12px_rgba(254,114,76,0.35)]
-            transition disabled:opacity-50
+            transition disabled:opacity-60
           "
           style={{ background: "linear-gradient(135deg,#FE724C,#FF9866)" }}
         >
-          Bayar Sekarang
+          {paying ? "Memproses…" : "Bayar Sekarang"}
         </motion.button>
       </section>
     </main>
