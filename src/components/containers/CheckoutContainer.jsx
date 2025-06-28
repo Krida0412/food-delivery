@@ -22,6 +22,11 @@ const ACCENT_BG  = "rgba(255,211,110,0.15)";
 const BACKEND    = (process.env.REACT_APP_BACKEND_URL || window.location.origin).replace(/\/$/, "");
 const CLIENT_KEY = process.env.REACT_APP_MIDTRANS_CLIENT_KEY;
 
+/* ---------- format harga Rupiah ---------- */
+const formatRupiah = (angka) => {
+  return "Rp " + parseInt(angka || 0, 10).toLocaleString("id-ID");
+};
+
 /* ---------- inject snap.js sekali saja ---------- */
 function useMidtrans(clientKey) {
   useEffect(() => {
@@ -44,7 +49,7 @@ const CheckoutItem = ({ item }) => (
     <div className="flex flex-col gap-[0.2rem]">
       <p className="text-sm font-medium text-[#363636]">{item.title}</p>
       <p className="text-sm font-semibold" style={{ color: PRIMARY }}>
-        Rp {(item.qty * item.price).toLocaleString("id-ID")}
+        {formatRupiah(item.qty * item.price)}
       </p>
     </div>
     <span className="ml-auto w-6 h-6 rounded-md flex items-center justify-center text-xs font-medium" style={{ background: ACCENT_BG, color: PRIMARY }}>
@@ -57,12 +62,12 @@ const CheckoutItem = ({ item }) => (
 export default function CheckoutContainer() {
   useMidtrans(CLIENT_KEY);
 
-  const navigate                     = useNavigate();
-  const [{ cartItems, user }]        = useStateValue();
-  const [alamat, setAlamat]          = useState("");
-  const [coords, setCoords]          = useState(null);
-  const [locLoading, setLocLoading]  = useState(true);
-  const [paying, setPaying]          = useState(false);
+  const navigate = useNavigate();
+  const [{ cartItems, user }] = useStateValue();
+  const [alamat, setAlamat] = useState("");
+  const [coords, setCoords] = useState(null);
+  const [locLoading, setLocLoading] = useState(true);
+  const [paying, setPaying] = useState(false);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -86,8 +91,8 @@ export default function CheckoutContainer() {
     );
   }, []);
 
-  const subtotal   = cartItems.reduce((s, it) => s + it.qty * it.price, 0);
-  const shipping   = 2500;
+  const subtotal = cartItems.reduce((s, it) => s + it.qty * it.price, 0);
+  const shipping = 2500;
   const grandTotal = subtotal + shipping;
 
   const handleBayar = async () => {
@@ -97,11 +102,11 @@ export default function CheckoutContainer() {
 
     try {
       const res = await fetch(`${BACKEND}/api/transaction`, {
-        method : "POST",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body   : JSON.stringify({
-          orderId     : `ORDER-${Date.now()}`,
-          grossAmount : grandTotal,
+        body: JSON.stringify({
+          orderId: `ORDER-${Date.now()}`,
+          grossAmount: grandTotal,
           customerName: user.displayName || "Pelanggan",
         }),
       });
@@ -111,7 +116,7 @@ export default function CheckoutContainer() {
         throw new Error(`(${res.status}) ${errText || "Gagal membuat transaksi"}`);
       }
 
-      const raw  = await res.text();
+      const raw = await res.text();
       const json = raw ? JSON.parse(raw) : {};
       if (!json.token) throw new Error(json.message || "Token kosong dari backend");
 
@@ -119,20 +124,20 @@ export default function CheckoutContainer() {
       window.snap.pay(json.token, {
         onSuccess: async (snapResult) => {
           await addDoc(collection(db, "orders"), {
-            uid      : user.uid,
+            uid: user.uid,
             alamat,
-            items    : cartItems,
-            total    : grandTotal,
+            items: cartItems,
+            total: grandTotal,
             snapResult,
-            status   : "Pending",
+            status: "Pending",
             createdAt: serverTimestamp(),
           });
           toast.success("Pembayaran berhasil!");
           navigate("/thankyou");
         },
         onPending: () => toast("Transaksi pending, selesaikan nanti 🙏"),
-        onError  : () => toast.error("Pembayaran gagal!"),
-        onClose  : () => toast("Kamu menutup popup pembayaran."),
+        onError: () => toast.error("Pembayaran gagal!"),
+        onClose: () => toast("Kamu menutup popup pembayaran."),
       });
     } catch (err) {
       console.error(err);
@@ -186,16 +191,16 @@ export default function CheckoutContainer() {
         <div className="space-y-3 text-[#555]">
           <div className="flex justify-between text-sm">
             <span>Subtotal</span>
-            <span>Rp {subtotal.toLocaleString("id-ID")}</span>
+            <span>{formatRupiah(subtotal)}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span>Ongkir</span>
-            <span>Rp {shipping.toLocaleString("id-ID")}</span>
+            <span>{formatRupiah(shipping)}</span>
           </div>
           <hr className="border-t border-[#EAEAEA]" />
           <div className="flex justify-between text-lg font-semibold">
             <span>Total</span>
-            <span style={{ color: PRIMARY }}>Rp {grandTotal.toLocaleString("id-ID")}</span>
+            <span style={{ color: PRIMARY }}>{formatRupiah(grandTotal)}</span>
           </div>
         </div>
 

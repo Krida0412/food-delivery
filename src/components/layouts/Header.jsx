@@ -24,6 +24,10 @@ const Header = () => {
     dispatch({ type: actionType.SET_CART_SHOW, cartShow: !cartShow });
   };
 
+  // Admin logic
+  const adminEmails = ['kridamukti25@gmail.com', 'pinkybeear@gmail.com'];
+  const isAdmin = user?.email && adminEmails.includes(user.email);
+
   return (
     <header className="fixed z-50 w-screen p-3 px-4 md:p-6 md:px-16 bg-primary">
       {/* Desktop */}
@@ -76,11 +80,10 @@ const Header = () => {
                 exit={{ opacity: 0, scale: 0.9 }}
                 className="w-40 bg-gray-50 shadow-xl rounded-lg flex flex-col absolute top-12 right-0"
               >
-                {(user?.email === 'kridamukti25@gmail.com' ||
-                  user?.email === 'pinkybeear@gmail.com') && (
-                  <Link to={'/createItem'}>
+                {isAdmin && (
+                  <Link to={'/admin'}>
                     <p className="px-4 py-2 flex items-center gap-3 cursor-pointer hover:bg-slate-100 transition text-textColor text-base">
-                      New Item <MdAdd />
+                      Dashboard Admin <MdAdd />
                     </p>
                   </Link>
                 )}
@@ -115,7 +118,7 @@ const Header = () => {
         </motion.div>
 
         {/* Logo */}
-        <Link to={'/'} className="flex items-center">
+        <Link to={'/'} className="flex items-center space-x-2">
           <motion.img
             whileTap={{ scale: 0.6 }}
             src={Logo}
@@ -126,7 +129,7 @@ const Header = () => {
             whileTap={{ scale: 0.6 }}
             className="text-headingColor text-xl font-bold"
           >
-            Chick
+            Foodie
           </motion.p>
         </Link>
 
@@ -144,24 +147,38 @@ const Header = () => {
               initial={{ opacity: 0, scale: 0.6 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="w-40 bg-gray-50 shadow-xl rounded-lg flex flex-col absolute top-12 right-0"
+              className="
+    w-48 bg-white shadow-xl rounded-xl
+    flex flex-col absolute top-12 right-0
+    overflow-hidden
+    border border-gray-100
+  "
             >
-              {user?.email === 'kridamukti25@gmail.com' && (
-                <Link to={'/createItem'}>
-                  <p
-                    className="px-4 py-2 flex items-center gap-3 cursor-pointer hover:bg-slate-100 transition text-textColor text-base"
+              {isAdmin && (
+                <Link to="/admin">
+                  <div
+                    className="
+                px-4 py-3 flex items-center justify-between
+                hover:bg-gray-100 text-gray-700 text-sm font-medium
+              "
                     onClick={() => setIsMenu(false)}
                   >
-                    New Item <MdAdd />
-                  </p>
+                    <span>Dashboard Admin</span>
+                    <MdAdd size={16} />
+                  </div>
                 </Link>
               )}
-              <p
-                className="rounded-md hover:bg-red-300 px-4 py-2 flex items-center justify-center gap-3 cursor-pointer transition text-textColor text-base"
+
+              <div
                 onClick={logout}
+                className="
+                px-4 py-3 flex items-center justify-between
+                hover:bg-red-100 text-gray-700 text-sm font-medium cursor-pointer
+              "
               >
-                Logout <MdLogout />
-              </p>
+                <span>Logout</span>
+                <MdLogout size={16} />
+              </div>
             </motion.div>
           )}
         </div>

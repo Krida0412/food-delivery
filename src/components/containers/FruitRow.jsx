@@ -5,9 +5,14 @@ import { useStateValue } from '../../context/StateProvider';
 import { actionType } from '../../context/reducer';
 import { addItem } from '../../utils/cart';
 
-/* ---------- Warna tema (match BottomNavbar) ---------- */
+/* ---------- Warna tema ---------- */
 const PRIMARY = '#FE724C'; // orange
 const ACCENT_BG = 'rgba(255,211,110,0.15)'; // soft yellow backdrop
+
+/* ---------- Helper Format Rupiah ---------- */
+const formatRupiah = (angka) => {
+  return 'Rp ' + parseInt(angka || 0, 10).toLocaleString('id-ID');
+};
 
 function FruitRow({ data, scrollValue }) {
   const rowRef = useRef();
@@ -71,7 +76,7 @@ function FruitRow({ data, scrollValue }) {
 
             <div className="mt-1 flex items-center justify-between">
               <p className="text-sm font-bold" style={{ color: PRIMARY }}>
-                Rp{item.price}
+                {formatRupiah(item.price)}
               </p>
               <motion.button
                 whileTap={{ scale: 0.9 }}

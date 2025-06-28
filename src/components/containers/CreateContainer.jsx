@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   MdFastfood,
@@ -15,10 +15,18 @@ import { actionType } from '../../context/reducer';
 import { useStateValue } from '../../context/StateProvider';
 import { getAllFoodItems, saveItem } from '../../utils/firebaseFunctions';
 
+const formatRupiah = (value) => {
+  const angka = value.replace(/[^0-9]/g, '');
+  return angka
+    ? 'Rp ' + parseInt(angka, 10).toLocaleString('id-ID')
+    : '';
+};
+
 const CreateContainer = () => {
   const [title, setTitle] = useState('');
   const [calories, setCalories] = useState('');
   const [price, setPrice] = useState('');
+  const [rawPrice, setRawPrice] = useState('');
   const [category, setCategory] = useState(null);
   const [imageAsset, setImageAsset] = useState(null);
   const [fields, setFields] = useState(false);
@@ -30,7 +38,6 @@ const CreateContainer = () => {
   const uploadImage = async (e) => {
     setIsLoading(true);
     const imageFile = e.target.files[0];
-
     const formData = new FormData();
     formData.append('file', imageFile);
     formData.append('upload_preset', 'food_upload');
@@ -46,17 +53,12 @@ const CreateContainer = () => {
           },
         },
       );
-
-      const data = res.data;
-      setImageAsset(data.secure_url);
+      setImageAsset(res.data.secure_url);
       setIsLoading(false);
       setFields(true);
       setMsg('Gambar berhasil diunggah 🎉');
       setAlertStatus('success');
-
-      setTimeout(() => {
-        setFields(false);
-      }, 4000);
+      setTimeout(() => setFields(false), 4000);
     } catch (error) {
       console.error(error);
       setFields(true);
@@ -74,15 +76,13 @@ const CreateContainer = () => {
     setFields(true);
     setMsg('Gambar berhasil dihapus 🎉');
     setAlertStatus('success');
-    setTimeout(() => {
-      setFields(false);
-    }, 4000);
+    setTimeout(() => setFields(false), 4000);
   };
 
   const saveDetails = () => {
     setIsLoading(true);
     try {
-      if (!title || !calories || !price || !category || !imageAsset) {
+      if (!title || !calories || !rawPrice || !category || !imageAsset) {
         setFields(true);
         setMsg('Mohon lengkapi semua kolom 🙇‍♂️');
         setAlertStatus('danger');
@@ -95,7 +95,7 @@ const CreateContainer = () => {
           id: `${Date.now()}`,
           title,
           calories,
-          price,
+          price: parseInt(rawPrice, 10),
           category,
           imageURL: imageAsset,
           qty: 1,
@@ -106,9 +106,7 @@ const CreateContainer = () => {
         setMsg('Data berhasil disimpan 🎉');
         clearData();
         setAlertStatus('success');
-        setTimeout(() => {
-          setFields(false);
-        }, 4000);
+        setTimeout(() => setFields(false), 4000);
       }
     } catch (error) {
       console.log(error);
@@ -120,7 +118,6 @@ const CreateContainer = () => {
         setIsLoading(false);
       }, 4000);
     }
-
     fetchData();
   };
 
@@ -129,6 +126,7 @@ const CreateContainer = () => {
     setImageAsset(null);
     setCalories('');
     setPrice('');
+    setRawPrice('');
   };
 
   const fetchData = async () => {
@@ -196,40 +194,34 @@ const CreateContainer = () => {
           ) : (
             <>
               {!imageAsset ? (
-                <>
-                  <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer">
-                    <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-                      <MdCloudUpload className="text-gray-500 text-3xl hover:text-gray-700" />
-                      <p className="text-gray-500 hover:text-gray-700">
-                        Unggah Gambar
-                      </p>
-                    </div>
-                    <input
-                      type="file"
-                      name="uploadimage"
-                      accept="image/*"
-                      onChange={uploadImage}
-                      className="w-0 h-0"
-                    />
-                  </label>
-                </>
-              ) : (
-                <>
-                  <div className="relative h-full">
-                    <img
-                      src={imageAsset}
-                      alt="upldimg"
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      type="button"
-                      className="absolute p-3 bottom-3 right-3 rounded-full bg-red-500 text-xl outline-none hover:shadow-md duration-500 transition-all ease-in-out cursor-pointer"
-                      onClick={deleteImage}
-                    >
-                      <MdDelete className="text-white" />
-                    </button>
+                <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer">
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                    <MdCloudUpload className="text-gray-500 text-3xl hover:text-gray-700" />
+                    <p className="text-gray-500 hover:text-gray-700">Unggah Gambar</p>
                   </div>
-                </>
+                  <input
+                    type="file"
+                    name="uploadimage"
+                    accept="image/*"
+                    onChange={uploadImage}
+                    className="w-0 h-0"
+                  />
+                </label>
+              ) : (
+                <div className="relative h-full">
+                  <img
+                    src={imageAsset}
+                    alt="upldimg"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    className="absolute p-3 bottom-3 right-3 rounded-full bg-red-500 text-xl outline-none hover:shadow-md duration-500 transition-all ease-in-out cursor-pointer"
+                    onClick={deleteImage}
+                  >
+                    <MdDelete className="text-white" />
+                  </button>
+                </div>
               )}
             </>
           )}
@@ -253,7 +245,12 @@ const CreateContainer = () => {
               type="text"
               required
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              onChange={(e) => {
+                const formatted = formatRupiah(e.target.value);
+                const numeric = e.target.value.replace(/[^0-9]/g, '');
+                setPrice(formatted);
+                setRawPrice(numeric);
+              }}
               placeholder="Harga"
               className="w-full h-full text-lg bg-transparent outline-none border-none placeholder:text-gray-400 text-textColor"
             />

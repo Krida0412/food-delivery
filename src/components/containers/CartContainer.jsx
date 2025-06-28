@@ -11,12 +11,17 @@ import CartItem from "../ui/CartItem";
 const PRIMARY   = "#FE724C";
 const SECONDARY = "#FFD36E";
 
+/* ---------- Helper Format Rupiah ---------- */
+const formatRupiah = (angka) => {
+  return "Rp " + parseInt(angka || 0, 10).toLocaleString("id-ID");
+};
+
 function CartContainer() {
   const [{ cartShow, cartItems, user }, dispatch] = useStateValue();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
 
-  const subtotal   = cartItems.reduce((a, i) => a + i.qty * i.price, 0);
-  const shipping   = 2500;
+  const subtotal = cartItems.reduce((a, i) => a + i.qty * i.price, 0);
+  const shipping = 2500;
   const grandTotal = subtotal + shipping;
 
   const toggleCart = () =>
@@ -77,8 +82,8 @@ function CartContainer() {
             "
             style={{ borderTopLeftRadius: "1.618rem" }}
           >
-            <Row label="Sub Total"  value={subtotal} />
-            <Row label="Ongkir"     value={shipping} />
+            <Row label="Sub Total" value={subtotal} />
+            <Row label="Ongkir" value={shipping} />
             <hr className="border-t border-[#EAEAEA]" />
             <Row label="Total" value={grandTotal} bold />
 
@@ -98,7 +103,6 @@ function CartContainer() {
           </footer>
         </>
       ) : (
-        /* Kosong */
         <div className="flex-1 flex flex-col items-center justify-center gap-6 px-6 text-center">
           <img src={EmptyCart} alt="Empty cart" className="w-60" />
           <p className="text-lg font-semibold text-[#8A8A8A]">
@@ -116,12 +120,10 @@ const Row = ({ label, value, bold }) => (
       {label}
     </span>
     <span
-      className={
-        bold ? "font-semibold text-lg" : "text-[#8A8A8A]"
-      }
+      className={bold ? "font-semibold text-lg" : "text-[#8A8A8A]"}
       style={bold ? { color: PRIMARY } : {}}
     >
-      Rp {value.toLocaleString("id-ID")}
+      {formatRupiah(value)}
     </span>
   </div>
 );

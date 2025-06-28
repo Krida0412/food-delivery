@@ -2,13 +2,18 @@ import React from "react";
 import { BsTicketPerforated, BsClipboardCheck } from "react-icons/bs";
 import { motion } from "framer-motion";
 
-/* Palet */
-const PRIMARY   = "#FE724C";
+/* ---------- Palet ---------- */
+const PRIMARY = "#FE724C";
 const SECONDARY = "#FFD36E";
 const ACCENT_BG = "rgba(243,246,255,0.55)";
 
+/* ---------- Helper: format angka ke Rupiah ---------- */
+const formatRupiah = (angka) => {
+  return "Rp " + parseInt(angka || 0, 10).toLocaleString("id-ID");
+};
+
 function PromoCard({ promo, onUse }) {
-  const isUsed   = promo.status === "terpakai";
+  const isUsed = promo.status === "terpakai";
   const progress = promo.claimed / promo.quota; // 0 – 1
 
   /* Salin kode kupon */
@@ -57,14 +62,26 @@ function PromoCard({ promo, onUse }) {
             {promo.desc}
           </p>
 
-          {/* Badge KEDALUWARSA (inline, tidak absolute) */}
+          {/* Optional: Tambahkan info nominal diskon atau syarat */}
+          {promo.discountAmount && (
+            <p className="text-xs text-[#8A8A8A]">
+              Potongan: {formatRupiah(promo.discountAmount)}
+            </p>
+          )}
+          {promo.minPurchase && (
+            <p className="text-[10px] text-[#AAAAAA]">
+              Min. pembelian {formatRupiah(promo.minPurchase)}
+            </p>
+          )}
+
+          {/* Badge KEDALUWARSA */}
           {promo.expired && (
             <span
               className="
                 inline-flex items-center uppercase font-semibold
                 text-[10px] px-2 py-[2px] rounded-md
                 text-white bg-[#C93636]
-                mt-[0.18rem]  /* jarak mini dengan teks di atas */
+                mt-[0.18rem]
                 whitespace-nowrap
               "
             >
@@ -123,8 +140,7 @@ function PromoCard({ promo, onUse }) {
             className="h-full rounded-full"
             style={{
               width: `${progress * 100}%`,
-              background:
-                "linear-gradient(90deg,#FE724C 0%,#FF9866 100%)",
+              background: "linear-gradient(90deg,#FE724C 0%,#FF9866 100%)",
             }}
           />
         </div>

@@ -1,11 +1,14 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 import AuthLayout from '../layouts/AuthLayout';
-import ProtectedRoute from './ProtectedRoute'; // ✅ import proteksi
+import AdminLayout from '../layouts/AdminLayout';
+import CourierLayout from '../layouts/CourierLayout';
+import ProtectedRoute from './ProtectedRoute';
 
 import MainContainer from '../components/containers/MainContainer';
 import CreateContainer from '../components/containers/CreateContainer';
 import CheckoutContainer from '../components/containers/CheckoutContainer';
+
 import SignIn from '../pages/SignIn';
 import SignUp from '../pages/SignUp';
 import PromoPage from '../pages/PromoPage';
@@ -14,17 +17,17 @@ import SettingsPage from '../pages/SettingsPage';
 import RiwayatPage from '../pages/RiwayatPage';
 import ThankYouPage from '../pages/ThankYouPage';
 import AdminPage from '../pages/AdminPage';
-import AdminLayout from '../layouts/AdminLayout';
-import CourierLayout from '../layouts/CourierLayout';
 import CourierPage from '../pages/CourierPage';
+
+import MenuListPage from '../pages/MenuListPage';
 
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* ✅ Redirect root ke /signin */}
+      {/* 🔁 Default redirect ke /signin */}
       <Route path="/" element={<Navigate to="/signin" replace />} />
 
-      {/* 🔐 Halaman dengan proteksi login */}
+      {/* 🔐 Halaman yang butuh login */}
       <Route
         path="/main"
         element={
@@ -39,9 +42,9 @@ const AppRoutes = () => {
         path="/createItem"
         element={
           <ProtectedRoute>
-            <MainLayout>
+            <AdminLayout>
               <CreateContainer />
-            </MainLayout>
+            </AdminLayout>
           </ProtectedRoute>
         }
       />
@@ -106,6 +109,7 @@ const AppRoutes = () => {
         }
       />
 
+      {/* 👮‍♂️ Admin Pages */}
       <Route
         path="/admin"
         element={
@@ -116,7 +120,38 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/admin/menu"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <MenuListPage />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/create"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <CreateContainer />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/editItem/:id"
+        element={
+          <ProtectedRoute>
+            <AdminLayout>
+              <CreateContainer editMode />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
 
+      {/* 🚚 Courier Pages */}
       <Route
         path="/courier"
         element={
@@ -128,7 +163,7 @@ const AppRoutes = () => {
         }
       />
 
-      {/* 🔓 Auth Pages tanpa login */}
+      {/* 🔓 Auth Pages */}
       <Route
         path="/signin"
         element={

@@ -4,8 +4,13 @@ import { motion } from "framer-motion";
 import { useStateValue } from "../../context/StateProvider";
 import { actionType } from "../../context/reducer";
 
-const PRIMARY    = "#FE724C";
-const ACCENT_BG  = "rgba(255,211,110,0.15)";
+const PRIMARY = "#FE724C";
+const ACCENT_BG = "rgba(255,211,110,0.15)";
+
+/* ---------- Helper Format Rupiah ---------- */
+const formatRupiah = (angka) => {
+  return "Rp " + parseInt(angka || 0, 10).toLocaleString("id-ID");
+};
 
 function CartItem({ item }) {
   const [{ cartItems }, dispatch] = useStateValue();
@@ -23,7 +28,6 @@ function CartItem({ item }) {
         i.id === item.id ? { ...i, qty: i.qty + 1 } : i
       );
     } else {
-      // remove
       if (item.qty === 1) {
         updated = cartItems.filter((i) => i.id !== item.id);
       } else {
@@ -32,6 +36,7 @@ function CartItem({ item }) {
         );
       }
     }
+
     setCart(updated);
   };
 
@@ -43,6 +48,7 @@ function CartItem({ item }) {
         shadow-[0_2px_8px_rgba(0,0,0,0.05)]
       "
     >
+      {/* Gambar */}
       <div
         className="w-16 h-16 rounded-full overflow-hidden shrink-0"
         style={{ background: ACCENT_BG }}
@@ -50,14 +56,15 @@ function CartItem({ item }) {
         <img src={item.imageURL} alt={item.title} className="w-full h-full object-cover" />
       </div>
 
+      {/* Info */}
       <div className="flex flex-col">
         <p className="text-sm font-medium text-[#363636]">{item.title}</p>
         <p className="text-sm font-semibold" style={{ color: PRIMARY }}>
-          Rp {(item.qty * item.price).toLocaleString("id-ID")}
+          {formatRupiah(item.qty * item.price)}
         </p>
       </div>
 
-      {/* qty control */}
+      {/* Qty Control */}
       <div className="flex items-center gap-2 ml-auto">
         <IconBtn icon={<BiMinus />} onClick={() => updateQty("remove")} />
         <span

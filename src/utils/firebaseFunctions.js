@@ -5,18 +5,31 @@ import {
   orderBy,
   query,
   setDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { firestore } from "../firebase.config";
-// Saving new item
+
+// Simpan item baru
 export const saveItem = async (data) => {
-  await setDoc(doc(firestore, "foodItems", `${Date.now()}`), data, {
-    merge: true,
-  });
+  const id = `${Date.now()}`;
+  await setDoc(doc(firestore, "foodItems", id), {
+    ...data,
+    id,
+    price: Number((data.price + "").replace(/\./g, "")),      // ✅ buang titik
+    calories: Number((data.calories + "").replace(/\./g, "")) // ✅ buang titik
+  }, { merge: true });
 };
-//get all food items
+
+// Ambil semua item makanan
 export const getAllFoodItems = async () => {
   const items = await getDocs(
     query(collection(firestore, "foodItems"), orderBy("id", "desc"))
   );
-  return items.docs.map((doc) => doc.data());
+  return items.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
+// Hapus item berdasarkan ID
+export const deleteItem = async (id) => {
+  if (!id) return;
+  await deleteDoc(doc(firestore, "foodItems", id));
 };

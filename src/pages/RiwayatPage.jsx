@@ -15,6 +15,9 @@ import { FiChevronDown } from 'react-icons/fi';
 const PRIMARY = '#FE724C';
 const BASE_BG = '#FFFCF9';
 
+/* ---------- Format Rupiah ---------- */
+const formatRupiah = (angka) => 'Rp ' + Number(angka || 0).toLocaleString('id-ID');
+
 /* ---------- Badge Status ---------- */
 const StatusBadge = ({ status }) => {
   const CLASSES = {
@@ -76,7 +79,7 @@ const OrderCard = ({ order }) => {
         {/* Total & status */}
         <div className="flex items-center gap-3">
           <p className="text-sm font-bold" style={{ color: PRIMARY }}>
-            Rp {Number(order.total).toLocaleString('id-ID')}
+            {formatRupiah(order.total)}
           </p>
           <StatusBadge status={order.status || 'Pending'} />
           <FiChevronDown
@@ -101,7 +104,7 @@ const OrderCard = ({ order }) => {
                 <span>
                   {it.title} × {it.qty}
                 </span>
-                <span>Rp {(it.qty * it.price).toLocaleString('id-ID')}</span>
+                <span>{formatRupiah(it.qty * it.price)}</span>
               </div>
             ))}
 
@@ -120,7 +123,6 @@ const RiwayatPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  /* Realtime listener Firestore + Auth */
   useEffect(() => {
     const auth = getAuth();
     const db = getFirestore();
@@ -136,7 +138,7 @@ const RiwayatPage = () => {
       const q = query(
         collection(db, 'orders'),
         where('uid', '==', user.uid),
-        orderBy('createdAt', 'desc'),
+        orderBy('createdAt', 'desc')
       );
 
       const unsub = onSnapshot(q, (snap) => {
@@ -151,7 +153,6 @@ const RiwayatPage = () => {
     return () => unsubAuth();
   }, []);
 
-  /* ---------- UI ---------- */
   if (loading) {
     return (
       <div

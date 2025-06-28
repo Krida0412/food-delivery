@@ -4,27 +4,27 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth";
-import { app } from "../firebase.config";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { app } from "../firebase.config";
 import { useStateValue } from "../context/StateProvider";
 import { actionType } from "../context/reducer";
-import { motion } from "framer-motion";
 
 /* ---------- Palet ---------- */
-const PRIMARY  = "#FE724C";
-const BASE_BG  = "#FFFCF9";
+const PRIMARY = "#FE724C";
+const BASE_BG = "#FFFCF9";
 
-function SignUp() {
+export default function SignUp() {
   const auth = getAuth(app);
-  const navigate      = useNavigate();
-  const [, dispatch]  = useStateValue();
+  const navigate = useNavigate();
+  const [, dispatch] = useStateValue();
 
-  const [name,  setName]  = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [pass,  setPass]  = useState("");
-  const [conf,  setConf]  = useState("");
+  const [pass, setPass] = useState("");
+  const [conf, setConf] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  /* ---------- Handler daftar ---------- */
   const handleSignup = async () => {
     if (!name || !email || !pass || !conf) {
       return alert("Semua field wajib diisi!");
@@ -33,45 +33,57 @@ function SignUp() {
       return alert("Password tidak cocok.");
     }
 
+    setLoading(true);
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
       await updateProfile(cred.user, { displayName: name });
 
       dispatch({ type: actionType.SET_USER, user: cred.user });
       localStorage.setItem("user", JSON.stringify(cred.user));
-      navigate("/");
+      navigate("/main");
     } catch (err) {
       console.error(err);
       alert("Registrasi gagal: " + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  /* ---------- UI ---------- */
   return (
     <main
-      className="min-h-screen flex items-center justify-center px-4"
+      className="w-full min-h-screen flex flex-col justify-center items-center px-4 py-8 overflow-hidden"
       style={{ background: BASE_BG }}
     >
-      <section
-        className="
-          w-full max-w-md space-y-8
-          bg-white/80 backdrop-blur-md
-          rounded-[1.618rem] p-8 md:p-10
-          shadow-[0_8px_24px_rgba(0,0,0,0.06)] border border-white/60
-        "
-      >
-        {/* Logo / heading */}
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-[#363636]">Buat Akun</h1>
-        </div>
+      {/* Logo / Branding */}
+      <motion.img
+        src="/logo-food.png"
+        alt="Logo"
+        className="w-24 h-24 mb-6 rounded-xl"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+      />
 
-        {/* Form */}
+      {/* Form Card */}
+      <motion.section
+        className="
+          w-full max-w-[420px] bg-white/90 backdrop-blur-md
+          rounded-2xl px-6 py-8 flex flex-col gap-6
+          shadow-lg border border-white/60
+        "
+        initial={{ y: 30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+      >
+        <h1 className="text-center text-2xl font-bold text-[#363636]">
+          Buat Akun Baru
+        </h1>
+
         <form
           onSubmit={(e) => {
             e.preventDefault();
             handleSignup();
           }}
-          className="space-y-5"
+          className="flex flex-col gap-4"
         >
           <Input
             id="name"
@@ -87,7 +99,7 @@ function SignUp() {
             value={email}
             onChange={setEmail}
             type="email"
-            placeholder="name@email.com"
+            placeholder="nama@email.com"
           />
           <Input
             id="password"
@@ -106,39 +118,42 @@ function SignUp() {
             placeholder="Konfirmasi password"
           />
 
-          {/* Tombol daftar */}
           <motion.button
             whileTap={{ scale: 0.97 }}
             type="submit"
+            disabled={loading}
             className="
               w-full py-3 rounded-full text-white font-medium
-              shadow-[0_4px_12px_rgba(254,114,76,0.35)]
-              transition
+              disabled:opacity-60 shadow-lg transition
             "
             style={{
               background: "linear-gradient(135deg,#FE724C 0%,#FF9866 100%)",
             }}
           >
-            Daftar Sekarang
+            {loading ? "Memproses…" : "Daftar Sekarang"}
           </motion.button>
         </form>
 
-        {/* Link ke login */}
         <p className="text-center text-sm text-[#8A8A8A]">
           Sudah punya akun?{" "}
-          <a href="/signin" className="font-semibold" style={{ color: PRIMARY }}>
+          <span
+            role="button"
+            className="font-semibold"
+            style={{ color: PRIMARY }}
+            onClick={() => navigate("/signin")}
+          >
             Masuk
-          </a>
+          </span>
         </p>
-      </section>
+      </motion.section>
     </main>
   );
 }
 
-/* ---------- Sub-komponen Input ---------- */
+/* ---------- Input ---------- */
 const Input = ({ id, label, value, onChange, type, placeholder }) => (
-  <div className="space-y-1">
-    <label htmlFor={id} className="block text-sm font-semibold text-[#555]">
+  <div className="flex flex-col gap-1">
+    <label htmlFor={id} className="text-sm font-medium text-[#555]">
       {label}
     </label>
     <input
@@ -148,12 +163,10 @@ const Input = ({ id, label, value, onChange, type, placeholder }) => (
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       className="
-        w-full px-4 py-2 rounded-md text-sm
-        bg-white/70 backdrop-blur border border-[#E5E5E5]
-        focus:outline-none focus:ring-2 focus:ring-[#FE724C]/60
+        w-full px-4 py-3 rounded-xl text-sm
+        bg-white border border-[#E5E5E5] shadow-sm
+        focus:outline-none focus:ring-2 focus:ring-[#FE724C]/50
       "
     />
   </div>
 );
-
-export default SignUp;
