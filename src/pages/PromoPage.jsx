@@ -2,17 +2,22 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import PromoCard from "../components/ui/PromoCard";
 
-/* ---------- Palet ---------- */
+// Import gambar lokal dari assets
+import imgC1 from "../img/c1.png";
+import imgC3 from "../img/c3.png";
+import imgI7 from "../img/i7.png";
+
+// Warna tema
 const PRIMARY = "#FE724C";
 const BASE_BG = "#FFFCF9";
 
-/* Dataset contoh */
+// Dataset promo
 const promos = [
   {
     id: 1,
-    title: "Mie Iblis Level 1",
+    title: "Dada Ayam Panggang",
     desc: "Diskon 50% • s.d 30 Jun",
-    image: "https://source.unsplash.com/600x400/?noodles",
+    image: imgC3,
     status: "tersedia",
     code: "IBLIS50",
     quota: 200,
@@ -20,9 +25,9 @@ const promos = [
   },
   {
     id: 2,
-    title: "Mie Iblis Level 3",
+    title: "Sayap Ayam",
     desc: "Beli 1 Gratis 1 • s.d 15 Jul",
-    image: "https://source.unsplash.com/600x400/?spicy-noodle",
+    image: imgC1,
     status: "terpakai",
     code: "IBLISB1G1",
     quota: 300,
@@ -30,9 +35,9 @@ const promos = [
   },
   {
     id: 3,
-    title: "Es Teh Manis",
+    title: "Es Krim",
     desc: "Gratis minuman untuk order ≥ Rp25K",
-    image: "https://source.unsplash.com/600x400/?iced-tea",
+    image: imgI7,
     status: "tersedia",
     code: "ESTEHFREE",
     quota: 100,
@@ -41,21 +46,19 @@ const promos = [
   },
 ];
 
+// Tab filter
 const TABS = [
-  { key: "semua",     label: "Semua"     },
-  { key: "tersedia",  label: "Tersedia"  },
-  { key: "terpakai",  label: "Terpakai"  },
+  { key: "semua", label: "Semua" },
+  { key: "tersedia", label: "Tersedia" },
+  { key: "terpakai", label: "Terpakai" },
 ];
 
 function PromoPage() {
   const [filter, setFilter] = useState("semua");
 
   const filteredPromos =
-    filter === "semua"
-      ? promos
-      : promos.filter((p) => p.status === filter);
+    filter === "semua" ? promos : promos.filter((p) => p.status === filter);
 
-  /* Handler pakai kupon */
   const handleUse = (id) => alert(`Gunakan kupon ID: ${id}`);
 
   return (
